@@ -32,8 +32,6 @@ args = parser.parse_args()
 if args.verbose:
     logger.setLevel(logging.DEBUG)
 
-#os.environ["BETYDB_KEY"] = "GZJZWnJpnDBhmKk7k6vb46z6lW6vjxSniRivRl2I"
-
 os.environ["BETYDB_KEY"] = args.key
 
 dirname = os.path.dirname(args.input)
