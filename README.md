@@ -13,6 +13,8 @@ docker run -v /data/terraref:/data/terraref \
   -o /output -k <clowder key>
 ```
 
+This will produce two geotiffs in the `output` heirarchy.
+
 `fieldmosaic.py` take the base directory (i.e., level above "sites") and date as input and produces the Level_1/fullfield heirarchy under the specified output directory:
 ```
 docker run -v /data/terraref:/data/terraref \
@@ -20,6 +22,7 @@ docker run -v /data/terraref:/data/terraref \
   craigwillis/workflow-pilot \
   ./fieldmosaic.py -b /data/terraref -d 2018-04-30  -o output -p 10
 ```
+This will create one of more fullfield images, depending on the number of scans run that day.
 
 `canopycover.py` takes the path to a fullfield image and generates the `*-canopycover.csv` in the same directory:
 ```
