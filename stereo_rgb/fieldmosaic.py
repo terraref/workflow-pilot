@@ -50,7 +50,8 @@ pct=args.percent
 # find /data/terraref/sites/ua-mac/raw_data/stereoTop/2018-04-30/ -name "*.json" -exec grep "Script path on local disk" {} +
 #
 logger.debug("Getting list of scan programs names")
-raw_dir = "%s/sites/ua-mac/raw_data/stereoTop/%s/*/*.json" % (base_dir, date)
+#raw_dir = "%s/sites/ua-mac/raw_data/stereoTop/%s/*/*.json" % (base_dir, date)
+raw_dir = "%s/sites/ua-mac/Level_1/rgb_geotiff/%s/*/*.json" % (base_dir, date)
 metadata_files = glob.glob(raw_dir)
 scan_programs = {}
 vrt_map = {}

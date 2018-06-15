@@ -1,0 +1,14 @@
+
+[settings]
+
+clowder_key = 
+
+# condor_pool / psc_bridges 
+execution_env = condor_pool
+
+# day to process in YYYY-MM-DD format
+day = 2018-03-31
+
+# limit the number of entries to process - useful when debugging
+entries_limit = 20
+
