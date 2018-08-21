@@ -1,2 +1,3 @@
 workflow/generated/
 workflow/run-settings.conf
+.idea/*
