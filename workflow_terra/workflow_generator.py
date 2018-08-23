@@ -67,8 +67,12 @@ def my_pfn(orig_path):
     return PFN('file://' + orig_path, site='local')
 
 def generate_tools_list():
-    # TODO: Make this return all py scripts in /tools
-    return ["tools/bin2tif.py"]
+    return [
+        "tools/bin2tif.py",
+        "tools/nrmac.py",
+        "tools/canopyCover.py",
+        "tools/fieldmosaic.py"
+    ]
 
 def generate_raw_filelist():
     # Scan raw data directory and build jobs by scan name
@@ -203,9 +207,16 @@ def create_scan_job(scan_name, scan_list):
     if conf.get('settings', 'execution_env') == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs("rgb_geotiff_" + scan_name + ".tar.gz", fieldmosaic_inputs, 0)
         fieldmosaic_inputs = [rgb_geotiff_tar]
-
-    # fieldmosaic outputs
-    out_fullfield_tar = File(my_lfn('fullfield_'+scan_name+'.tar.gz'))
+        fieldmosaic_outputs = ['fullfield_'+scan_name+'.tar.gz']
+        canopy_cover_input = 'fullfield_'+scan_name+'.tar.gz'
+    else:
+        fieldmosaic_outputs = [
+            file_paths.replace("_file_paths.json", ".vrt"),
+            file_paths.replace("_file_paths.json", ".tif"),
+            file_paths.replace("_file_paths.json", "_thumb.tif"),
+            file_paths.replace("_file_paths.json", "_10pct.tif"),
+            file_paths.replace("_file_paths.json", ".png")
+        ]
 
     # fieldmosaic
     job = Job('fieldmosaic.sh')
@@ -215,7 +226,8 @@ def create_scan_job(scan_name, scan_list):
     for in_file in fieldmosaic_inputs:
         job.uses(in_file, link=Link.INPUT)
     job.uses(fieldmosaic_json, link=Link.INPUT)
-    job.uses(out_fullfield_tar, link=Link.OUTPUT, transfer=True)
+    for out_file in fieldmosaic_outputs:
+        job.uses(File(my_lfn(out_file)), link=Link.OUTPUT, transfer=True)
     dax.addJob(job)
 
     # canopy_cover outputs
@@ -226,8 +238,8 @@ def create_scan_job(scan_name, scan_list):
 
     # canopy_cover
     job = Job('canopy_cover.sh')
-    job.addArguments(day, out_trait_csv)
-    job.uses(out_fullfield_tar, link=Link.INPUT)
+    job.addArguments(canopy_cover_input, scan_name)
+    job.uses(canopy_cover_input, link=Link.INPUT)
     job.uses(out_bety_csv, link=Link.OUTPUT, transfer=True)
     job.uses(out_geo_csv, link=Link.OUTPUT, transfer=True)
     dax.addJob(job)

@@ -13,4 +13,6 @@ fi
 
 python fieldmosaic.py -j $JSON
 
-tar czf fullfield_${SCAN}.tar.gz $OUT_DIR
+if [ -e "rgb_geotiff_${SCAN}.tar.gz" ]; then
+    tar czf fullfield_${SCAN}.tar.gz $OUT_DIR
+fi
