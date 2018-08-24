@@ -301,7 +301,10 @@ def create_scan_dax(scan_name, scan_list):
     job = create_job('canopy_cover.sh', args, inputs, outputs)
     dax.addJob(job)
 
-# write out the dax
-f = open('workflow/generated/dax.xml', 'w')
-dax.writeXML(f)
-f.close()
+    # write out the dax
+    f = open('workflow/generated/dax_%s.xml' % scan_name, 'w')
+    dax.writeXML(f)
+    f.close()
+
+
+process_raw_filelist()
