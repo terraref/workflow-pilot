@@ -67,6 +67,9 @@ def my_pfn(orig_path):
     return PFN('file://' + orig_path, site='local')
 
 def generate_tools_list():
+    """
+    return all python scripts in /tools directory
+    """
     return [
         "tools/bin2tif.py",
         "tools/nrmac.py",
@@ -74,8 +77,10 @@ def generate_tools_list():
         "tools/fieldmosaic.py"
     ]
 
-def generate_raw_filelist():
-    # Scan raw data directory and build jobs by scan name
+def process_raw_filelist():
+    """
+    scan raw stereoTop directory and create workflow dax files by scan name
+    """
     scan_list = []
     curr_scan = ""
 
@@ -112,10 +117,12 @@ def generate_raw_filelist():
                 scan_list.append({"left": lbin, "right": rbin, "metadata": meta})
 
     if scan_list.length > 0:
-        create_scan_job(curr_scan, scan_list)
+        create_scan_dax(curr_scan, scan_list)
 
 def get_scan_from_metadata(meta):
-    # Extract scan name & hash from metadata.json file
+    """
+    extract scan name & hash from metadata.json file
+    """
     with open(meta, 'r') as f:
         md = json.load(f)
 
@@ -129,25 +136,54 @@ def get_scan_from_metadata(meta):
 
     return scan_name
 
-def create_scan_job(scan_name, scan_list):
-    # Extract scan name & hash from metadata.json file
-    dax = ADAG('stereo_rgb_'+scan_name)
+def create_job(script, args, inputs, outputs):
+    """
+    shorthand for defining a Job as part of a workflow
+    """
+    job = Job(script)
+    for arg in args:
+        job.addArguments(arg)
 
-    tools = generate_tools_list()
+    # all jobs will have access to python scripts
+    for tool in generate_tools_list():
+        job.uses(tool, link=Link.INPUT)
+
+    for input in inputs:
+        job.uses(input, link=Link.INPUT)
+
+    for output in outputs:
+        job.uses(output, link=Link.OUTPUT, transfer=True)
+
+    #job.addProfile(Profile(Namespace.PEGASUS, 'clusters.size', '20'))
+    return job
+
+def create_scan_dax(scan_name, scan_list):
+    """
+    register all jobs in stereoTop workflow and create dax file for single scan
+    """
+    dax = ADAG('stereo_rgb_'+scan_name)
 
     count = 0
     fieldmosaic_inputs = []
+    fieldmosaic_quality_inputs = []
 
+    # the scan will be associated with the day on which it begins
     fieldmosaic_day = None
     for triple in scan_list:
+        # interpret date and timestamp of scan from folder structure of first image
         fileset = scan_list[triple]
         day = fileset["left"].split("/")[-3]
         ts  = fileset["left"].split("/")[-2]
-        out_dir = 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts)
         if not fieldmosaic_day:
             fieldmosaic_day = day
 
-        # input files
+        # converted geoTIFFs, quality score JSON and quality score geoTIFF end up here
+        out_dir = 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts)
+
+        """
+        1 ----- bin2tif (convert raw BIN files to geoTIFFs) -----
+        """
+        # INPUT
         in_left = File(my_lfn(fileset["left"]))
         in_left.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["left"]))))
         dax.addFile(in_left)
@@ -158,51 +194,76 @@ def create_scan_job(scan_name, scan_list):
         in_meta.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["metadata"]))))
         dax.addFile(in_meta)
 
-        # output files
+        # OUTPUT
         out_left = File(my_lfn(out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts))
         out_right = File(my_lfn(out_dir+'rgb_geotiff_L1_ua-mac_%s_right.tif' % ts))
         out_meta = File(my_lfn(out_dir+'clean_metadata.json'))
 
-        # add a job for bin2tif
-        job = Job('bin2tif.sh')
-        job.addArguments(in_left, in_right, in_meta, out_left, out_right, out_meta, ts)
-        for tool in tools:
-            job.uses(tool, link=Link.INPUT)
-        job.uses(in_left, link=Link.INPUT)
-        job.uses(in_right, link=Link.INPUT)
-        job.uses(in_meta, link=Link.INPUT)
-        job.uses(out_left, link=Link.OUTPUT, transfer=True)
-        job.uses(out_right, link=Link.OUTPUT, transfer=True)
-        job.uses(out_meta, link=Link.OUTPUT, transfer=True)
-        #job.addProfile(Profile(Namespace.PEGASUS, 'clusters.size', '20'))
+        # JOB
+        args = [in_left, in_right, in_meta, out_left, out_right, out_meta, ts]
+        inputs = [in_left, in_right, in_meta]
+        outputs = [out_left, out_right, out_meta]
+        job = create_job('bin2tif.sh', args, inputs, outputs)
         dax.addJob(job)
 
-        # quality scoring files
+        """
+        2 ----- nrmac (determine quality score of input geoTIFF and create low-res output geoTIFF) -----
+        """
+        # OUTPUT
+        out_qual_left  = File(my_lfn(out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts))
         out_nrmac = File(my_lfn(out_dir+'nrmac_scores.json'))
 
-        # add jobs for NRMAC quality scoring
-        job = Job('nrmac.sh')
-        job.addArguments(out_left, out_right, out_nrmac)
-        for tool in tools:
-            job.uses(tool, link=Link.INPUT)
-        job.uses(out_left, link=Link.INPUT)
-        job.uses(out_right, link=Link.INPUT)
-        job.uses(out_nrmac, link=Link.OUTPUT, transfer=True)
+        # JOB
+        args = [out_left, out_right, out_qual_left, out_nrmac]
+        inputs = [out_left, out_right, in_meta]
+        outputs = [out_qual_left, out_nrmac]
+        job = create_job('nrmac.sh', args, inputs, outputs)
         dax.addJob(job)
 
-        # keep track of the files we need for the next step
+        # needed for upcoming stitching
         fieldmosaic_inputs.append(out_left)
-        #fieldmosaic_inputs.append(out_right)
-        #fieldmosaic_inputs.append(out_meta)
+        fieldmosaic_quality_inputs.append(out_qual_left)
         count += 1
 
-    print("%s: %d datasets found" % (scan_name, count))
+    print("%s -- %d datasets found" % (scan_name, count))
 
+    """
+    3 ----- fieldmosaic (create fullfield stitch of the nrmac quality geoTIFFs) -----
+    """
+    # INPUT
+    file_paths = 'ua-mac/Level_1/fullfield/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
+    with open(file_paths, 'w') as j:
+        json.dump(sorted(fieldmosaic_quality_inputs), j)
+    fieldmosaic_quality_json = File(my_lfn(file_paths))
+    dax.addFile(in_meta)
+
+    # OUTPUT
+    # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
+    if conf.get('settings', 'execution_env') == 'condor_pool':
+        rgb_geotiff_tar = merge_rgb_geotiffs("rgb_geotiff_quality_" + scan_name + ".tar.gz", fieldmosaic_quality_inputs, 0)
+        fieldmosaic_quality_inputs = [rgb_geotiff_tar]
+    # the quality stitched output is small, so don't tar this up even for condorio
+    fieldmosaic_quality_outputs = [
+        file_paths.replace("_file_paths.json", ".vrt"),
+        file_paths.replace("_file_paths.json", ".tif")]
+
+    # JOB
+    args = [fieldmosaic_quality_json, scan_name, 'true']
+    inputs = fieldmosaic_quality_inputs + [fieldmosaic_quality_json]
+    outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs))
+    job = create_job('fieldmosaic.sh', args, inputs, outputs)
+    dax.addJob(job)
+
+    """
+    4 ----- fieldmosaic (create fullfield stitch of the actual geoTIFFs) -----
+    """
+    # INPUT
     file_paths = 'ua-mac/Level_1/fullfield/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, day, scan_name)
     with open(file_paths, 'w') as j:
         json.dump(sorted(fieldmosaic_inputs), j)
     fieldmosaic_json = File(my_lfn(file_paths))
 
+    # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
     if conf.get('settings', 'execution_env') == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs("rgb_geotiff_" + scan_name + ".tar.gz", fieldmosaic_inputs, 0)
@@ -215,33 +276,29 @@ def create_scan_job(scan_name, scan_list):
             file_paths.replace("_file_paths.json", ".tif"),
             file_paths.replace("_file_paths.json", "_thumb.tif"),
             file_paths.replace("_file_paths.json", "_10pct.tif"),
-            file_paths.replace("_file_paths.json", ".png")
-        ]
+            file_paths.replace("_file_paths.json", ".png")]
 
-    # fieldmosaic
-    job = Job('fieldmosaic.sh')
-    job.addArguments(fieldmosaic_json, scan_name)
-    for tool in tools:
-        job.uses(tool, link=Link.INPUT)
-    for in_file in fieldmosaic_inputs:
-        job.uses(in_file, link=Link.INPUT)
-    job.uses(fieldmosaic_json, link=Link.INPUT)
-    for out_file in fieldmosaic_outputs:
-        job.uses(File(my_lfn(out_file)), link=Link.OUTPUT, transfer=True)
+    # JOB
+    args = [fieldmosaic_json, scan_name, 'false']
+    inputs = fieldmosaic_inputs + [fieldmosaic_json]
+    outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_outputs))
+    job = create_job('fieldmosaic.sh', args, inputs, outputs)
     dax.addJob(job)
 
-    # canopy_cover outputs
+    """
+    5 ----- canopyCover (generate plot-level canopy cover trait CSVs) -----
+    """
+    # OUTPUT
     cc_bety = file_paths.replace("_file_paths.json", "_canopycover_bety.csv")
     cc_geo = file_paths.replace("_file_paths.json", "_canopycover_geo.csv")
     out_bety_csv = File(my_lfn(cc_bety))
     out_geo_csv = File(my_lfn(cc_geo))
 
-    # canopy_cover
-    job = Job('canopy_cover.sh')
-    job.addArguments(canopy_cover_input, scan_name)
-    job.uses(canopy_cover_input, link=Link.INPUT)
-    job.uses(out_bety_csv, link=Link.OUTPUT, transfer=True)
-    job.uses(out_geo_csv, link=Link.OUTPUT, transfer=True)
+    # JOB
+    args = [canopy_cover_input, scan_name]
+    inputs = [canopy_cover_input]
+    outputs = [out_bety_csv, out_geo_csv]
+    job = create_job('canopy_cover.sh', args, inputs, outputs)
     dax.addJob(job)
 
 # write out the dax

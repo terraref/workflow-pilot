@@ -1,8 +1,15 @@
+#!/usr/bin/python
+
 import argparse
 import logging
 import json
 import numpy as np
 from PIL import Image, ImageFilter
+
+from terrautils.metadata import clean_metadata
+from terrautils.spatial import geojson_to_tuples
+from terrautils.formats import create_geotiff
+import terraref.stereo_rgb
 
 
 logging.basicConfig(format='%(asctime)s %(message)s')
@@ -11,7 +18,9 @@ logger = logging.getLogger("nrmac")
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", "--left", required=True, help="Input left tif file")
 parser.add_argument("-r", "--right", required=True, help="Input right tif file")
-parser.add_argument("-o", "--output", required=True, help="Output json file")
+parser.add_argument("-m", "--meta", required=True, help="Input metadata.json file")
+parser.add_argument("--out_l", required=True, help="Left output")
+parser.add_argument("--out_j", required=True, help="JSON output")
 parser.add_argument("-v", "--verbose", help="Debug logging", action="store_true")
 
 args = parser.parse_args()
@@ -49,8 +58,25 @@ def nrmac(imgfile):
     return NRMAC
 
 
+logger.debug("Cleaning metadata.json contents")
+with open(args.meta, 'r') as mdfile:
+    j = json.load(mdfile)
+    md = clean_metadata(j, "stereoTop")
+
+lbounds = geojson_to_tuples(md['spatial_metadata']['left']['bounding_box'])
+
+logger.debug("Calculating quality scores")
 left_qual = nrmac(args.left)
 right_qual = nrmac(args.right)
-format = {"quality_score": {"left": left_qual, "right": right_qual} }
-with open(args.output, 'w') as o:
-    o.write(json.dumps(format))
+
+# Create geoTIFF with left image quality score
+logger.debug("Saving left quality score as raster")
+create_geotiff(np.array([[left_qual,left_qual],[left_qual,left_qual]]), lbounds, args.out_l)
+
+with open(args.out_j, 'w') as o:
+    o.write(json.dumps({
+        "quality_score": {
+            "left": left_qual,
+            "right": right_qual
+        }
+    }))
