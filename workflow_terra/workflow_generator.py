@@ -231,7 +231,7 @@ def create_scan_dax(scan_name, scan_list):
         ----- Clowder submission (upload bin2tif files to Clowder) -----
         """
         clowder_ids = rgb_geotiff_out_dir+'clowder_ids.json'
-        args = ['clowder', 'rgb_geotiff', rgb_geotiff_out_dir]
+        args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
         outputs = [clowder_ids]
         job = create_job('submitter.sh', args, [], outputs)
         dax.addJob(job)
@@ -321,7 +321,7 @@ def create_scan_dax(scan_name, scan_list):
     ----- Clowder submission (upload bin2tif files to Clowder) -----
     """
     clowder_ids = fullfield_out_dir+scan_name+'_clowder_ids.json'
-    args = ['clowder', 'fullfield', fullfield_out_dir]
+    args = ['fullfield', scan_name, fullfield_out_dir]
     outputs = [clowder_ids]
     job = create_job('submitter.sh', args, [], outputs)
     dax.addJob(job)

@@ -2,9 +2,11 @@
 
 import argparse
 import logging
-import json
 
-
+from pyclowder.connectors import Connector
+from pyclowder.files import upload_metadata
+from terrautils.extractors import build_dataset_hierarchy, upload_to_dataset, build_metadata
+from terrautils.geostreams import create_datapoint_with_dependencies
 
 
 logging.basicConfig(format='%(asctime)s %(message)s')
@@ -12,7 +14,7 @@ logger = logging.getLogger("nrmac")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", required=True, help="Input geo CSV file")
-parser.add_argument("-t", "--type", required=True, help="Type of trait in geo CSV")
+parser.add_argument("-c", "--clowderid", required=True, help="Clowder id of fullfield file used to generate")
 parser.add_argument("-v", "--verbose", help="Debug logging", action="store_true")
 
 args = parser.parse_args()
@@ -20,25 +22,46 @@ if args.verbose:
     logger.setLevel(logging.DEBUG)
 
 
-logger.debug("Cleaning metadata.json contents")
-with open(args.meta, 'r') as mdfile:
-    j = json.load(mdfile)
-    md = clean_metadata(j, "stereoTop")
+host = "https://terraref.ncsa.illinois.edu/clowder/"
+secret_key = ""
 
-lbounds = geojson_to_tuples(md['spatial_metadata']['left']['bounding_box'])
+def upload_to_geostreams(file, clowder_id):
+    conn = Connector(None , mounted_paths={"/home/clowder/sites":"/home/clowder/sites"})
 
-logger.debug("Calculating quality scores")
-left_qual = nrmac(args.left)
-right_qual = nrmac(args.right)
+    successful_plots = 0
+    with open(file, 'rb') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            centroid_lonlat = [row['lon'], row['lat']]
+            time_fmt = row['dp_time']
+            timestamp = row['timestamp']
+            dpmetadata = {
+                "source": row['source'],
+                "value": row['value']
+            }
+            trait = row['trait']
 
-# Create geoTIFF with left image quality score
-logger.debug("Saving left quality score as raster")
-create_geotiff(np.array([[left_qual,left_qual],[left_qual,left_qual]]), lbounds, args.out_l)
+            create_datapoint_with_dependencies(conn, host, secret_key, trait,
+                                               (centroid_lonlat[1], centroid_lonlat[0]), time_fmt, time_fmt,
+                                               dpmetadata, timestamp)
+            successful_plots += 1
 
-with open(args.out_j, 'w') as o:
-    o.write(json.dumps({
-        "quality_score": {
-            "left": left_qual,
-            "right": right_qual
-        }
-    }))
+    # Extractor metadata
+    extractor_info = {
+        "extractor_name": "terra.geostreams",
+        "extractor_version": "1.0",
+        "extractor_author": "Max Burnette <mburnet2@illinois.edu>",
+        "extractor_description": "Geostreams CSV uploader",
+        "extractor_repo": "https://github.com/terraref/computing-pipeline.git"
+    }
+
+    # Add metadata to original dataset indicating this was run
+    ext_meta = build_metadata(host, extractor_info, clowder_id, {
+        "plots_processed": successful_plots,
+    }, 'file')
+    upload_metadata(conn, host, secret_key, clowder_id, ext_meta)
+
+    # TODO: write geo_ids.json
+
+print("Submission to Geostreams would happen now")
+# upload_to_geostreams(args.input, args.clowderid)

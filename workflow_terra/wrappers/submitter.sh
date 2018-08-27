@@ -3,14 +3,14 @@
 set -e
 
 JOBTYPE=$1
-JOBNAME=$2
+JOBARG=$2
 INPUT=$3
 
 
-if [ $JOBTYPE == 'clowder' ]; then
-    python submit_clowder.py --dir $INPUT -t $JOBNAME
-elif [ $JOBTYPE == 'bety' ]; then
-    python submit_bety.py -i $INPUT -t $JOBNAME
+if [ $JOBTYPE == 'bety' ]; then
+    python submit_bety.py -i $INPUT -c $JOBARG
+elif [ $JOBTYPE == 'geo' ]; then
+    python submit_geo.py -i $INPUT -c $JOBARG
 else
-    python submit_geo.py -i $INPUT -t $JOBNAME
+    python submit_clowder.py --dir $INPUT -t $JOBTYPE -s $JOBARG
 fi
