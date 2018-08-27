@@ -49,7 +49,7 @@ tif_meta = {
     "extractor_name": "terra.stereo-rgb.bin2tif",
     "extractor_version": "1.1",
     "extractor_author": "Max Burnette <mburnet2@illinois.edu>",
-    "extractor_description": "Stereo RGB Image Bin to GeoTIFF Converter (Pegasus environment)",
+    "extractor_description": "Stereo RGB Image Bin to GeoTIFF Converter",
     "extractor_repo": "https://github.com/terraref/extractors-stereo-rgb.git"
 }
 
