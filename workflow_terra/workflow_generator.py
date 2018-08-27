@@ -104,16 +104,18 @@ def process_raw_filelist():
                 if fname.endswith("right.bin"):
                     rbin = fpath
 
+            # TODO: More logging
             if meta and lbin and rbin:
                 scan = get_scan_from_metadata(meta)
 
                 if scan and scan != curr_scan:
                     if scan_list.length > 0:
-                        create_scan_job(curr_scan, scan_list)
+                        create_scan_dax(curr_scan, scan_list)
 
                     scan_list = []
                     curr_scan = scan
 
+                # TODO: What do we do if there is no scan in the metadata? "unknown_scan_{date}"?
                 scan_list.append({"left": lbin, "right": rbin, "metadata": meta})
 
     if scan_list.length > 0:
@@ -178,10 +180,10 @@ def create_scan_dax(scan_name, scan_list):
             fieldmosaic_day = day
 
         # converted geoTIFFs, quality score JSON and quality score geoTIFF end up here
-        out_dir = 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts)
+        rgb_geotiff_out_dir = 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts)
 
         """
-        1 ----- bin2tif (convert raw BIN files to geoTIFFs) -----
+        ----- bin2tif (convert raw BIN files to geoTIFFs) -----
         """
         # INPUT
         in_left = File(my_lfn(fileset["left"]))
@@ -195,9 +197,9 @@ def create_scan_dax(scan_name, scan_list):
         dax.addFile(in_meta)
 
         # OUTPUT
-        out_left = File(my_lfn(out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts))
-        out_right = File(my_lfn(out_dir+'rgb_geotiff_L1_ua-mac_%s_right.tif' % ts))
-        out_meta = File(my_lfn(out_dir+'clean_metadata.json'))
+        out_left = File(my_lfn(rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts))
+        out_right = File(my_lfn(rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_right.tif' % ts))
+        out_meta = File(my_lfn(rgb_geotiff_out_dir+'clean_metadata.json'))
 
         # JOB
         args = [in_left, in_right, in_meta, out_left, out_right, out_meta, ts]
@@ -207,11 +209,11 @@ def create_scan_dax(scan_name, scan_list):
         dax.addJob(job)
 
         """
-        2 ----- nrmac (determine quality score of input geoTIFF and create low-res output geoTIFF) -----
+        ----- nrmac (determine quality score of input geoTIFF and create low-res output geoTIFF) -----
         """
         # OUTPUT
-        out_qual_left  = File(my_lfn(out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts))
-        out_nrmac = File(my_lfn(out_dir+'nrmac_scores.json'))
+        out_qual_left  = File(my_lfn(rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts))
+        out_nrmac = File(my_lfn(rgb_geotiff_out_dir+'nrmac_scores.json'))
 
         # JOB
         args = [out_left, out_right, out_qual_left, out_nrmac]
@@ -225,17 +227,29 @@ def create_scan_dax(scan_name, scan_list):
         fieldmosaic_quality_inputs.append(out_qual_left)
         count += 1
 
+        """
+        ----- Clowder submission (upload bin2tif files to Clowder) -----
+        """
+        clowder_ids = rgb_geotiff_out_dir+'clowder_ids.json'
+        args = ['clowder', 'rgb_geotiff', rgb_geotiff_out_dir]
+        outputs = [clowder_ids]
+        job = create_job('submitter.sh', args, [], outputs)
+        dax.addJob(job)
+
     print("%s -- %d datasets found" % (scan_name, count))
 
+    # fullfield mosaics and canopy cover CSVs end up here
+    fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % day
+
     """
-    3 ----- fieldmosaic (create fullfield stitch of the nrmac quality geoTIFFs) -----
+    ----- fieldmosaic QAQC (create fullfield stitch of the nrmac quality geoTIFFs) -----
     """
     # INPUT
-    file_paths = 'ua-mac/Level_1/fullfield/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
+    file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
     with open(file_paths, 'w') as j:
         json.dump(sorted(fieldmosaic_quality_inputs), j)
     fieldmosaic_quality_json = File(my_lfn(file_paths))
-    dax.addFile(in_meta)
+    dax.addFile(fieldmosaic_quality_json)
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
@@ -255,16 +269,17 @@ def create_scan_dax(scan_name, scan_list):
     dax.addJob(job)
 
     """
-    4 ----- fieldmosaic (create fullfield stitch of the actual geoTIFFs) -----
+    ----- fieldmosaic (create fullfield stitch of the actual geoTIFFs) -----
     """
     # INPUT
-    file_paths = 'ua-mac/Level_1/fullfield/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, day, scan_name)
+    file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, day, scan_name)
     with open(file_paths, 'w') as j:
         json.dump(sorted(fieldmosaic_inputs), j)
     fieldmosaic_json = File(my_lfn(file_paths))
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
+    full_resolution_geotiff = file_paths.replace("_file_paths.json", ".tif")
     if conf.get('settings', 'execution_env') == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs("rgb_geotiff_" + scan_name + ".tar.gz", fieldmosaic_inputs, 0)
         fieldmosaic_inputs = [rgb_geotiff_tar]
@@ -273,10 +288,11 @@ def create_scan_dax(scan_name, scan_list):
     else:
         fieldmosaic_outputs = [
             file_paths.replace("_file_paths.json", ".vrt"),
-            file_paths.replace("_file_paths.json", ".tif"),
+            full_resolution_geotiff,
             file_paths.replace("_file_paths.json", "_thumb.tif"),
             file_paths.replace("_file_paths.json", "_10pct.tif"),
             file_paths.replace("_file_paths.json", ".png")]
+        canopy_cover_input = file_paths.replace("_file_paths.json", ".tif")
 
     # JOB
     args = [fieldmosaic_json, scan_name, 'false']
@@ -286,7 +302,7 @@ def create_scan_dax(scan_name, scan_list):
     dax.addJob(job)
 
     """
-    5 ----- canopyCover (generate plot-level canopy cover trait CSVs) -----
+    ----- canopyCover (generate plot-level canopy cover trait CSVs) -----
     """
     # OUTPUT
     cc_bety = file_paths.replace("_file_paths.json", "_canopycover_bety.csv")
@@ -295,10 +311,38 @@ def create_scan_dax(scan_name, scan_list):
     out_geo_csv = File(my_lfn(cc_geo))
 
     # JOB
-    args = [canopy_cover_input, scan_name]
+    args = [canopy_cover_input, scan_name, full_resolution_geotiff]
     inputs = [canopy_cover_input]
     outputs = [out_bety_csv, out_geo_csv]
     job = create_job('canopy_cover.sh', args, inputs, outputs)
+    dax.addJob(job)
+
+    """
+    ----- Clowder submission (upload bin2tif files to Clowder) -----
+    """
+    clowder_ids = fullfield_out_dir+scan_name+'_clowder_ids.json'
+    args = ['clowder', 'fullfield', fullfield_out_dir]
+    outputs = [clowder_ids]
+    job = create_job('submitter.sh', args, [], outputs)
+    dax.addJob(job)
+
+    """
+    ----- BETY submission (upload trait CSVs) -----
+    """
+    bety_ids = fullfield_out_dir+scan_name+'_bety_ids.json'
+    args = ['bety', 'canopy_cover', cc_bety]
+    outputs = [bety_ids]
+    job = create_job('submitter.sh', args, [], outputs)
+    dax.addJob(job)
+
+    """
+    ----- Geostreams submission (upload geo CSVs - requires fullfield Clowder ID) -----
+    """
+    geo_ids = fullfield_out_dir+scan_name+'_geo_ids.json'
+    args = ['geo', 'canopy_cover', cc_geo]
+    inputs = [clowder_ids]
+    outputs = [geo_ids]
+    job = create_job('submitter.sh', args, inputs, outputs)
     dax.addJob(job)
 
     # write out the dax
