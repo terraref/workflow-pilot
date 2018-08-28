@@ -18,8 +18,10 @@ def add_merge_job(dax, final_name, chunk, level, job_number, final):
     adds a merge job
     """
     j = Job(name="merge.sh")
-    out_file = File(final_name + "-%d-%d.tar.gz" %(level, job_number))
+    out_file_name = final_name + "-%d-%d.tar.gz" %(level, job_number)
+    out_file = File(out_file_name)
     if final:
+        out_file_name = final_name
         out_file = File(final_name)
     j.uses(out_file, link=Link.OUTPUT, transfer=final)
     j.addArguments(out_file)
@@ -29,7 +31,7 @@ def add_merge_job(dax, final_name, chunk, level, job_number, final):
         j.addArguments(flfn)
     j.addProfile(Profile(Namespace.CONDOR, 'request_disk', '100 GB'))
     dax.addJob(j)
-    return out_file
+    return out_file_name
 
 def merge_rgb_geotiffs(dax, final_name, inputs, level):
     """
