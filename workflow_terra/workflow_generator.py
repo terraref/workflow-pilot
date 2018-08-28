@@ -24,8 +24,9 @@ def add_merge_job(final_name, chunk, level, job_number, final):
     j.uses(out_file, link=Link.OUTPUT, transfer=final)
     j.addArguments(out_file)
     for f in chunk:
-        j.uses(f, link=Link.INPUT)
-        j.addArguments(f)
+        flfn = File(my_lfn(f))
+        j.uses(flfn, link=Link.INPUT)
+        j.addArguments(flfn)
     j.addProfile(Profile(Namespace.CONDOR, 'request_disk', '100 GB'))
     dax.addJob(j)
     return out_file
@@ -266,6 +267,8 @@ def create_scan_dax(scan_name, scan_list):
     if execution_env == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs("rgb_geotiff_quality_" + scan_name + ".tar.gz", fieldmosaic_quality_inputs, 0)
         fieldmosaic_quality_inputs = [rgb_geotiff_tar]
+    else:
+        fieldmosaic_quality_inputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_inputs))
     # the quality stitched output is small, so don't tar this up even for condorio
     fieldmosaic_quality_outputs = [
         file_paths.replace("_file_paths.json", ".vrt"),
@@ -290,6 +293,7 @@ def create_scan_dax(scan_name, scan_list):
     with open(file_paths, 'w') as j:
         json.dump(sorted(fieldmosaic_inputs), j)
     fieldmosaic_json = File(my_lfn(file_paths))
+    dax.addFile(fieldmosaic_json)
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
@@ -300,6 +304,7 @@ def create_scan_dax(scan_name, scan_list):
         fieldmosaic_outputs = ['fullfield_'+scan_name+'.tar.gz']
         canopy_cover_input = 'fullfield_'+scan_name+'.tar.gz'
     else:
+        fieldmosaic_inputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_inputs))
         fieldmosaic_outputs = [
             file_paths.replace("_file_paths.json", ".vrt"),
             full_resolution_geotiff,
