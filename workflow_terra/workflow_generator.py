@@ -95,6 +95,7 @@ def process_raw_filelist():
 
         timestamps = sorted(os.listdir(date_dir))
         for ts in timestamps:
+            print("...scanning %s" % ts)
             ts_dir = os.path.join(date_dir, ts)
 
             meta, lbin, rbin = None, None, None
@@ -114,7 +115,7 @@ def process_raw_filelist():
                 scan = get_scan_from_metadata(meta)
 
                 if scan and scan != curr_scan:
-                    if scan_list.length > 0:
+                    if len(scan_list) > 0:
                         create_scan_dax(curr_scan, scan_list)
 
                     scan_list = []
@@ -123,7 +124,7 @@ def process_raw_filelist():
                 # TODO: What do we do if there is no scan in the metadata? "unknown_scan_{date}"?
                 scan_list.append({"left": lbin, "right": rbin, "metadata": meta})
 
-    if scan_list.length > 0:
+    if len(scan_list) > 0:
         print("Would generate scan %s with %s entries" % (curr_scan, len(scan_list)))
         #create_scan_dax(curr_scan, scan_list)
 
