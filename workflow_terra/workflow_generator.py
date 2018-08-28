@@ -317,6 +317,7 @@ def create_scan_dax(scan_name, scan_list):
         fieldmosaic_inputs = [rgb_geotiff_tar]
         fieldmosaic_outputs = ['fullfield_'+scan_name+'.tar.gz']
         canopy_cover_input = 'fullfield_'+scan_name+'.tar.gz'
+        canopy_cover_input_daxf = File(my_lfn(canopy_cover_input))
     else:
         fieldmosaic_inputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_inputs))
         fieldmosaic_outputs = [
