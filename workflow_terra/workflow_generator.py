@@ -211,7 +211,7 @@ def create_scan_dax(scan_name, scan_list):
         dax.addFile(in_meta_daxf)
 
         # OUTPUT
-        out_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % t
+        out_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts
         out_right = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_right.tif' % ts
         out_meta = rgb_geotiff_out_dir+'clean_metadata.json'
         out_left_daxf = File(my_lfn(out_left))
