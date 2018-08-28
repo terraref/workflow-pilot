@@ -9,6 +9,7 @@ from Pegasus.DAX3 import *
 root_dir = "/data/terraref/sites/"
 limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
 execution_env = 'condor_pool'
+dry_run = True
 
 
 def add_merge_job(final_name, chunk, level, job_number, final):
@@ -115,7 +116,7 @@ def process_raw_filelist():
 
                 if scan and scan != curr_scan:
                     if len(scan_list) > 0:
-                        print("%s - [%s] dax will contain %s entries" % (date, curr_scan, len(scan_list)))
+                        print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
                         #create_scan_dax(curr_scan, scan_list)
 
                     scan_list = []
@@ -125,7 +126,7 @@ def process_raw_filelist():
                 scan_list.append({"left": lbin, "right": rbin, "metadata": meta})
 
     if len(scan_list) > 0:
-        print("%s - [%s] dax will contain %s entries" % (date, curr_scan, len(scan_list)))
+        print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
         #create_scan_dax(curr_scan, scan_list)
 
 def get_scan_from_metadata(meta):
@@ -242,8 +243,6 @@ def create_scan_dax(scan_name, scan_list):
         job = create_job('submitter.sh', args, [], outputs)
         dax.addJob(job)
 
-    print("%s -- %d datasets found" % (scan_name, count))
-
     # fullfield mosaics and canopy cover CSVs end up here
     fullfield_out_dir = os.path.join(root_dir, 'ua-mac/Level_1/fullfield/%s/' % day)
 
@@ -251,7 +250,10 @@ def create_scan_dax(scan_name, scan_list):
     ----- fieldmosaic QAQC (create fullfield stitch of the nrmac quality geoTIFFs) -----
     """
     # INPUT
-    file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
+    if dry_run:
+        file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
+    else:
+        file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, scan_name)
     with open(file_paths, 'w') as j:
         json.dump(sorted(fieldmosaic_quality_inputs), j)
     fieldmosaic_quality_json = File(my_lfn(file_paths))
@@ -278,7 +280,10 @@ def create_scan_dax(scan_name, scan_list):
     ----- fieldmosaic (create fullfield stitch of the actual geoTIFFs) -----
     """
     # INPUT
-    file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, day, scan_name)
+    if dry_run:
+        file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, day, scan_name)
+    else:
+        file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, scan_name)
     with open(file_paths, 'w') as j:
         json.dump(sorted(fieldmosaic_inputs), j)
     fieldmosaic_json = File(my_lfn(file_paths))
@@ -352,7 +357,7 @@ def create_scan_dax(scan_name, scan_list):
     dax.addJob(job)
 
     # write out the dax
-    f = open('workflow/generated/dax_%s.xml' % scan_name, 'w')
+    f = open('workflow/generated/%s.xml' % scan_name, 'w')
     dax.writeXML(f)
     f.close()
 
