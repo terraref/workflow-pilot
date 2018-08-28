@@ -116,7 +116,8 @@ def process_raw_filelist():
 
                 if scan and scan != curr_scan:
                     if len(scan_list) > 0:
-                        create_scan_dax(curr_scan, scan_list)
+                        print("Would generate scan %s with %s entries" % (curr_scan, len(scan_list)))
+                        #create_scan_dax(curr_scan, scan_list)
 
                     scan_list = []
                     curr_scan = scan
@@ -178,9 +179,8 @@ def create_scan_dax(scan_name, scan_list):
 
     # the scan will be associated with the day on which it begins
     fieldmosaic_day = None
-    for triple in scan_list:
+    for fileset in scan_list:
         # interpret date and timestamp of scan from folder structure of first image
-        fileset = scan_list[triple]
         day = fileset["left"].split("/")[-3]
         ts  = fileset["left"].split("/")[-2]
         if not fieldmosaic_day:
