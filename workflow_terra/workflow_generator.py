@@ -6,7 +6,9 @@ import json
 from Pegasus.DAX3 import *
 
 
-raw_dir = "/home/clowder/sites/ua-mac/raw_data/stereoTop"
+root_dir = "/data/terraref/sites/"
+limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
+
 
 def add_merge_job(final_name, chunk, level, job_number, final):
     """
@@ -84,9 +86,11 @@ def process_raw_filelist():
     scan_list = []
     curr_scan = ""
 
-    dates = sorted(os.listdir(raw_dir))
+    dates = sorted(os.listdir(os.path.join(root_dir, "ua-mac/raw_data/stereoTop")))
     for date in dates:
-        date_dir = os.path.join(raw_dir, date)
+        if date not in limit_dates:
+            continue
+        date_dir = os.path.join(os.path.join(root_dir, "ua-mac/raw_data/stereoTop"), date)
 
         timestamps = sorted(os.listdir(date_dir))
         for ts in timestamps:
@@ -119,7 +123,8 @@ def process_raw_filelist():
                 scan_list.append({"left": lbin, "right": rbin, "metadata": meta})
 
     if scan_list.length > 0:
-        create_scan_dax(curr_scan, scan_list)
+        print("Would generate scan %s with %s entries" % (curr_scan, len(scan_list)))
+        #create_scan_dax(curr_scan, scan_list)
 
 def get_scan_from_metadata(meta):
     """
@@ -180,7 +185,7 @@ def create_scan_dax(scan_name, scan_list):
             fieldmosaic_day = day
 
         # converted geoTIFFs, quality score JSON and quality score geoTIFF end up here
-        rgb_geotiff_out_dir = 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts)
+        rgb_geotiff_out_dir = os.path.join(root_dir, 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts))
 
         """
         ----- bin2tif (convert raw BIN files to geoTIFFs) -----
@@ -239,7 +244,7 @@ def create_scan_dax(scan_name, scan_list):
     print("%s -- %d datasets found" % (scan_name, count))
 
     # fullfield mosaics and canopy cover CSVs end up here
-    fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % day
+    fullfield_out_dir = os.path.join(root_dir, 'ua-mac/Level_1/fullfield/%s/' % day)
 
     """
     ----- fieldmosaic QAQC (create fullfield stitch of the nrmac quality geoTIFFs) -----
