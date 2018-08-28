@@ -95,7 +95,6 @@ def process_raw_filelist():
 
         timestamps = sorted(os.listdir(date_dir))
         for ts in timestamps:
-            print("...scanning %s" % ts)
             ts_dir = os.path.join(date_dir, ts)
 
             meta, lbin, rbin = None, None, None
@@ -116,7 +115,7 @@ def process_raw_filelist():
 
                 if scan and scan != curr_scan:
                     if len(scan_list) > 0:
-                        print("Would generate scan %s with %s entries" % (curr_scan, len(scan_list)))
+                        print("%s - [%s] dax will contain %s entries" % (date, curr_scan, len(scan_list)))
                         #create_scan_dax(curr_scan, scan_list)
 
                     scan_list = []
@@ -126,7 +125,7 @@ def process_raw_filelist():
                 scan_list.append({"left": lbin, "right": rbin, "metadata": meta})
 
     if len(scan_list) > 0:
-        print("Would generate scan %s with %s entries" % (curr_scan, len(scan_list)))
+        print("%s - [%s] dax will contain %s entries" % (date, curr_scan, len(scan_list)))
         #create_scan_dax(curr_scan, scan_list)
 
 def get_scan_from_metadata(meta):
