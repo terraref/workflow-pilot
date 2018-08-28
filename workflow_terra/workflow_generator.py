@@ -197,25 +197,31 @@ def create_scan_dax(scan_name, scan_list):
         ----- bin2tif (convert raw BIN files to geoTIFFs) -----
         """
         # INPUT
-        in_left = File(my_lfn(fileset["left"]))
-        in_left.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["left"]))))
-        dax.addFile(in_left)
-        in_right = File(my_lfn(fileset["right"]))
-        in_right.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["right"]))))
-        dax.addFile(in_right)
-        in_meta = File(my_lfn(fileset["metadata"]))
-        in_meta.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["metadata"]))))
-        dax.addFile(in_meta)
+        in_left = fileset["left"]
+        in_right = fileset["right"]
+        in_meta = fileset["metadata"]
+        in_left_daxf = File(my_lfn(fileset["left"]))
+        in_left_daxf.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["left"]))))
+        dax.addFile(in_left_daxf)
+        in_right_daxf = File(my_lfn(fileset["right"]))
+        in_right_daxf.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["right"]))))
+        dax.addFile(in_right_daxf)
+        in_meta_daxf = File(my_lfn(fileset["metadata"]))
+        in_meta_daxf.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["metadata"]))))
+        dax.addFile(in_meta_daxf)
 
         # OUTPUT
-        out_left = File(my_lfn(rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts))
-        out_right = File(my_lfn(rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_right.tif' % ts))
-        out_meta = File(my_lfn(rgb_geotiff_out_dir+'clean_metadata.json'))
+        out_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % t
+        out_right = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_right.tif' % ts
+        out_meta = rgb_geotiff_out_dir+'clean_metadata.json'
+        out_left_daxf = File(my_lfn(out_left))
+        out_right_daxf = File(my_lfn(out_right))
+        out_meta_daxf = File(my_lfn(out_meta))
 
         # JOB
         args = [in_left, in_right, in_meta, out_left, out_right, out_meta, ts]
-        inputs = [in_left, in_right, in_meta]
-        outputs = [out_left, out_right, out_meta]
+        inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
+        outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs)
         dax.addJob(job)
 
@@ -223,13 +229,15 @@ def create_scan_dax(scan_name, scan_list):
         ----- nrmac (determine quality score of input geoTIFF and create low-res output geoTIFF) -----
         """
         # OUTPUT
-        out_qual_left  = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts
-        out_nrmac = File(my_lfn(rgb_geotiff_out_dir+'nrmac_scores.json'))
+        out_qual_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts
+        out_nrmac = rgb_geotiff_out_dir+'nrmac_scores.json'
+        out_qual_left_daxf = File(my_lfn(out_qual_left))
+        out_nrmac_daxf = File(my_lfn(out_nrmac))
 
         # JOB
         args = [out_left, out_right, out_qual_left, out_nrmac]
-        inputs = [out_left, out_right, in_meta]
-        outputs = [File(my_lfn(out_qual_left)), out_nrmac]
+        inputs = [out_left_daxf, out_right_daxf, in_meta_daxf]
+        outputs = [out_qual_left_daxf, out_nrmac_daxf]
         job = create_job('nrmac.sh', args, inputs, outputs)
         dax.addJob(job)
 
@@ -279,7 +287,7 @@ def create_scan_dax(scan_name, scan_list):
         file_paths.replace("_file_paths.json", ".tif")]
 
     # JOB
-    args = [fieldmosaic_quality_json, scan_name, 'true']
+    args = [file_paths, scan_name, 'true']
     inputs = fieldmosaic_quality_inputs + [fieldmosaic_quality_json]
     outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs)
@@ -318,9 +326,10 @@ def create_scan_dax(scan_name, scan_list):
             file_paths.replace("_file_paths.json", "_10pct.tif"),
             file_paths.replace("_file_paths.json", ".png")]
         canopy_cover_input = file_paths.replace("_file_paths.json", ".tif")
+        canopy_cover_input_daxf = File(my_lfn(canopy_cover_input))
 
     # JOB
-    args = [fieldmosaic_json, scan_name, 'false']
+    args = [file_paths, scan_name, 'false']
     inputs = fieldmosaic_inputs + [fieldmosaic_json]
     outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs)
@@ -332,13 +341,13 @@ def create_scan_dax(scan_name, scan_list):
     # OUTPUT
     cc_bety = file_paths.replace("_file_paths.json", "_canopycover_bety.csv")
     cc_geo = file_paths.replace("_file_paths.json", "_canopycover_geo.csv")
-    out_bety_csv = File(my_lfn(cc_bety))
-    out_geo_csv = File(my_lfn(cc_geo))
+    cc_bety_daxf = File(my_lfn(cc_bety))
+    cc_geo_daxf = File(my_lfn(cc_geo))
 
     # JOB
     args = [canopy_cover_input, scan_name, full_resolution_geotiff]
-    inputs = [canopy_cover_input]
-    outputs = [out_bety_csv, out_geo_csv]
+    inputs = [canopy_cover_input_daxf]
+    outputs = [cc_bety_daxf, cc_geo_daxf]
     job = create_job('canopy_cover.sh', args, inputs, outputs)
     dax.addJob(job)
 
@@ -356,6 +365,7 @@ def create_scan_dax(scan_name, scan_list):
     """
     bety_ids = fullfield_out_dir+scan_name+'_bety_ids.json'
     args = ['bety', 'canopy_cover', cc_bety]
+    inputs = [cc_bety_daxf]
     outputs = [bety_ids]
     job = create_job('submitter.sh', args, [], outputs)
     dax.addJob(job)
@@ -365,7 +375,7 @@ def create_scan_dax(scan_name, scan_list):
     """
     geo_ids = fullfield_out_dir+scan_name+'_geo_ids.json'
     args = ['geo', 'canopy_cover', cc_geo]
-    inputs = [clowder_ids]
+    inputs = [clowder_ids, cc_geo_daxf]
     outputs = [geo_ids]
     job = create_job('submitter.sh', args, inputs, outputs)
     dax.addJob(job)
