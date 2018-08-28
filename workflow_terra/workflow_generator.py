@@ -256,7 +256,8 @@ def create_scan_dax(scan_name, scan_list):
         file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
     else:
         file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, scan_name)
-    os.makedirs(file_paths)
+    if not os.path.isdir(os.path.dirname(file_paths)):
+        os.makedirs(os.path.dirname(file_paths))
     with open(file_paths, 'w') as j:
         json.dump(sorted(fieldmosaic_quality_inputs), j)
     fieldmosaic_quality_json = File(my_lfn(file_paths))
@@ -289,7 +290,8 @@ def create_scan_dax(scan_name, scan_list):
         file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, day, scan_name)
     else:
         file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, scan_name)
-    os.makedirs(file_paths)
+    if not os.path.isdir(os.path.dirname(file_paths)):
+        os.makedirs(os.path.dirname(file_paths))
     with open(file_paths, 'w') as j:
         json.dump(sorted(fieldmosaic_inputs), j)
     fieldmosaic_json = File(my_lfn(file_paths))
