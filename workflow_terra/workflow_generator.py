@@ -8,6 +8,7 @@ from Pegasus.DAX3 import *
 
 root_dir = "/data/terraref/sites/"
 limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
+execution_env = 'condor_pool'
 
 
 def add_merge_job(final_name, chunk, level, job_number, final):
@@ -54,7 +55,7 @@ def my_lfn(orig_lfn):
     lfn so that it does not have any sub directories.
     '''
     lfn = orig_lfn
-    if conf.get('settings', 'execution_env') == 'condor_pool':
+    if execution_env == 'condor_pool':
         lfn = re.sub(r'/', '___', orig_lfn)
     return lfn
 
@@ -62,7 +63,7 @@ def my_pfn(orig_path):
     '''
     Depending on the execution environment, use either file:// or go:// PFNs
     '''
-    if conf.get('settings', 'execution_env') != 'condor_pool' and \
+    if execution_env != 'condor_pool' and \
             re.search(r'sites/ua-mac/raw_data/stereoTop', orig_path):
         path = re.sub(r'.*ua-mac/', 'go://terraref#403204c4-6004-11e6-8316-22000b97daec/ua-mac/', orig_path)
         return PFN(path, site='globusonline')
@@ -96,7 +97,7 @@ def process_raw_filelist():
         for ts in timestamps:
             ts_dir = os.path.join(date_dir, ts)
 
-            meta, lbin, rbin = None, None, None, None
+            meta, lbin, rbin = None, None, None
 
             files = os.listdir(ts_dir)
             for fname in files:
@@ -258,7 +259,7 @@ def create_scan_dax(scan_name, scan_list):
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
-    if conf.get('settings', 'execution_env') == 'condor_pool':
+    if execution_env == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs("rgb_geotiff_quality_" + scan_name + ".tar.gz", fieldmosaic_quality_inputs, 0)
         fieldmosaic_quality_inputs = [rgb_geotiff_tar]
     # the quality stitched output is small, so don't tar this up even for condorio
@@ -285,7 +286,7 @@ def create_scan_dax(scan_name, scan_list):
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
     full_resolution_geotiff = file_paths.replace("_file_paths.json", ".tif")
-    if conf.get('settings', 'execution_env') == 'condor_pool':
+    if execution_env == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs("rgb_geotiff_" + scan_name + ".tar.gz", fieldmosaic_inputs, 0)
         fieldmosaic_inputs = [rgb_geotiff_tar]
         fieldmosaic_outputs = ['fullfield_'+scan_name+'.tar.gz']
