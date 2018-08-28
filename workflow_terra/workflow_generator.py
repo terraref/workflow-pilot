@@ -117,7 +117,7 @@ def process_raw_filelist():
                 if scan and scan != curr_scan:
                     if len(scan_list) > 0:
                         print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
-                        #create_scan_dax(curr_scan, scan_list)
+                        create_scan_dax(curr_scan, scan_list)
 
                     scan_list = []
                     curr_scan = scan
@@ -127,7 +127,7 @@ def process_raw_filelist():
 
     if len(scan_list) > 0:
         print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
-        #create_scan_dax(curr_scan, scan_list)
+        create_scan_dax(curr_scan, scan_list)
 
 def get_scan_from_metadata(meta):
     """
@@ -357,9 +357,12 @@ def create_scan_dax(scan_name, scan_list):
     dax.addJob(job)
 
     # write out the dax
-    f = open('workflow/generated/%s.xml' % scan_name, 'w')
+    dax_file = 'workflow/generated/%s.xml' % scan_name
+    f = open(dax_file, 'w')
     dax.writeXML(f)
     f.close()
+
+    print("...wrote %s" % dax_file)
 
 
 process_raw_filelist()
