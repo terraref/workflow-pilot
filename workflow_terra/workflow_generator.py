@@ -221,13 +221,13 @@ def create_scan_dax(scan_name, scan_list):
         ----- nrmac (determine quality score of input geoTIFF and create low-res output geoTIFF) -----
         """
         # OUTPUT
-        out_qual_left  = File(my_lfn(rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts))
+        out_qual_left  = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts
         out_nrmac = File(my_lfn(rgb_geotiff_out_dir+'nrmac_scores.json'))
 
         # JOB
         args = [out_left, out_right, out_qual_left, out_nrmac]
         inputs = [out_left, out_right, in_meta]
-        outputs = [out_qual_left, out_nrmac]
+        outputs = [File(my_lfn(out_qual_left)), out_nrmac]
         job = create_job('nrmac.sh', args, inputs, outputs)
         dax.addJob(job)
 
