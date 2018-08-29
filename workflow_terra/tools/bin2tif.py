@@ -33,9 +33,10 @@ for inputfile in [args.left, args.right, args.meta]:
         sys.exit(1)
 
 logger.debug("Cleaning metadata.json contents")
+sensors = Sensors(base=args.output, station="ua-mac", sensor="rgb_geotiff")
 with open(args.meta, 'r') as mdfile:
     j = json.load(mdfile)
-    md = clean_metadata(j, "stereoTop")
+    md = clean_metadata(j, "stereoTop", fixed=True)
 
 logger.debug("Preparing embedded geotiff metadata")
 experiment_names = []
@@ -44,7 +45,6 @@ for e in md["experiment_metadata"]:
 tif_meta = {
     "datetime": str(md["gantry_variable_metadata"]["datetime"]),
     "sensor_id": str(md["sensor_fixed_metadata"]["sensor_id"]),
-    "sensor_url": str(md["sensor_fixed_metadata"]["url"]),
     "experiment_name": ", ".join(experiment_names),
     "extractor_name": "terra.stereo-rgb.bin2tif",
     "extractor_version": "1.1",
@@ -54,7 +54,6 @@ tif_meta = {
 }
 
 logger.debug("Creating output directories")
-sensors = Sensors(base=args.output, station="ua-mac", sensor="rgb_geotiff")
 left_tiff = sensors.create_sensor_path(args.timestamp, opts=['left'])
 right_tiff = sensors.create_sensor_path(args.timestamp, opts=['right'])
 
@@ -68,6 +67,6 @@ terraref.stereo_rgb.bin2tif(args.left, left_tiff, lshape, lbounds, tif_meta)
 terraref.stereo_rgb.bin2tif(args.right, right_tiff, rshape, rbounds, tif_meta)
 
 logger.debug("Writing cleaned metadata to file")
-clean_md_file = os.path.join(os.path.dirname(left_tiff, "clean_metadata.json"))
+clean_md_file = os.path.join(os.path.dirname(left_tiff), "clean_metadata.json")
 with open(clean_md_file, 'w') as cmdfile:
     cmdfile.write(json.dumps(md))
