@@ -82,7 +82,10 @@ def generate_tools_list():
         "tools/bin2tif.py",
         "tools/nrmac.py",
         "tools/canopyCover.py",
-        "tools/fieldmosaic.py"
+        "tools/fieldmosaic.py",
+        "tools/submit_clowder.py",
+        "tools/submit_bety.py",
+        "tools/submit_geo.py"
     ]
 
 def process_raw_filelist():
@@ -230,14 +233,16 @@ def create_scan_dax(scan_name, scan_list):
         """
         # OUTPUT
         out_qual_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts
+        out_qual_right = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_right.tif' % ts
         out_nrmac = rgb_geotiff_out_dir+'nrmac_scores.json'
         out_qual_left_daxf = File(my_lfn(out_qual_left))
+        out_qual_right_daxf = File(my_lfn(out_qual_right))
         out_nrmac_daxf = File(my_lfn(out_nrmac))
 
         # JOB
         args = [out_left, out_right, out_qual_left, out_nrmac]
         inputs = [out_left_daxf, out_right_daxf, in_meta_daxf]
-        outputs = [out_qual_left_daxf, out_nrmac_daxf]
+        outputs = [out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         job = create_job('nrmac.sh', args, inputs, outputs)
         dax.addJob(job)
 
@@ -251,8 +256,9 @@ def create_scan_dax(scan_name, scan_list):
         """
         clowder_ids = rgb_geotiff_out_dir+'clowder_ids.json'
         args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
+        inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         outputs = [clowder_ids]
-        job = create_job('submitter.sh', args, [], outputs)
+        job = create_job('submitter.sh', args, inputs, outputs)
         dax.addJob(job)
 
     # fullfield mosaics and canopy cover CSVs end up here
@@ -263,14 +269,14 @@ def create_scan_dax(scan_name, scan_list):
     """
     # INPUT
     if dry_run:
-        file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
+        file_paths_q = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
     else:
-        file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, scan_name)
-    if not os.path.isdir(os.path.dirname(file_paths)):
-        os.makedirs(os.path.dirname(file_paths))
-    with open(file_paths, 'w') as j:
+        file_paths_q = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, scan_name)
+    if not os.path.isdir(os.path.dirname(file_paths_q)):
+        os.makedirs(os.path.dirname(file_paths_q))
+    with open(file_paths_q, 'w') as j:
         json.dump(sorted(fieldmosaic_quality_inputs), j)
-    fieldmosaic_quality_json = File(my_lfn(file_paths))
+    fieldmosaic_quality_json = File(my_lfn(file_paths_q))
     dax.addFile(fieldmosaic_quality_json)
 
     # OUTPUT
@@ -283,11 +289,11 @@ def create_scan_dax(scan_name, scan_list):
         fieldmosaic_quality_inputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_inputs))
     # the quality stitched output is small, so don't tar this up even for condorio
     fieldmosaic_quality_outputs = [
-        file_paths.replace("_file_paths.json", ".vrt"),
-        file_paths.replace("_file_paths.json", ".tif")]
+        file_paths_q.replace("_file_paths.json", ".vrt"),
+        file_paths_q.replace("_file_paths.json", ".tif")]
 
     # JOB
-    args = [file_paths, scan_name, 'true']
+    args = [file_paths_q, scan_name, 'true']
     inputs = fieldmosaic_quality_inputs + [fieldmosaic_quality_json]
     outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs)
@@ -357,8 +363,11 @@ def create_scan_dax(scan_name, scan_list):
     """
     clowder_ids = fullfield_out_dir+scan_name+'_clowder_ids.json'
     args = ['fullfield', scan_name, fullfield_out_dir]
+    inputs = ([fieldmosaic_quality_json, fieldmosaic_json] +
+              list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs)) +
+              list(map(lambda x: File(my_lfn(x)), fieldmosaic_inputs)))
     outputs = [clowder_ids]
-    job = create_job('submitter.sh', args, [], outputs)
+    job = create_job('submitter.sh', args, inputs, outputs)
     dax.addJob(job)
 
     """
@@ -368,7 +377,7 @@ def create_scan_dax(scan_name, scan_list):
     args = ['bety', 'canopy_cover', cc_bety]
     inputs = [cc_bety_daxf]
     outputs = [bety_ids]
-    job = create_job('submitter.sh', args, [], outputs)
+    job = create_job('submitter.sh', args, inputs, outputs)
     dax.addJob(job)
 
     """

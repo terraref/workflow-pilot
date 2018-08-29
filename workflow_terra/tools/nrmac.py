@@ -20,6 +20,7 @@ parser.add_argument("-l", "--left", required=True, help="Input left tif file")
 parser.add_argument("-r", "--right", required=True, help="Input right tif file")
 parser.add_argument("-m", "--meta", required=True, help="Input metadata.json file")
 parser.add_argument("--out_l", required=True, help="Left output")
+parser.add_argument("--out_r", required=True, help="Right output")
 parser.add_argument("--out_j", required=True, help="JSON output")
 parser.add_argument("-v", "--verbose", help="Debug logging", action="store_true")
 
@@ -64,14 +65,16 @@ with open(args.meta, 'r') as mdfile:
     md = clean_metadata(j, "stereoTop")
 
 lbounds = geojson_to_tuples(md['spatial_metadata']['left']['bounding_box'])
+rbounds = geojson_to_tuples(md['spatial_metadata']['right']['bounding_box'])
 
 logger.debug("Calculating quality scores")
 left_qual = nrmac(args.left)
 right_qual = nrmac(args.right)
 
 # Create geoTIFF with left image quality score
-logger.debug("Saving left quality score as raster")
+logger.debug("Saving quality scores as rasters")
 create_geotiff(np.array([[left_qual,left_qual],[left_qual,left_qual]]), lbounds, args.out_l)
+create_geotiff(np.array([[right_qual,right_qual],[right_qual,right_qual]]), rbounds, args.out_r)
 
 with open(args.out_j, 'w') as o:
     o.write(json.dumps({
