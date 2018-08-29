@@ -392,6 +392,8 @@ def create_scan_dax(date, scan_name, scan_list):
 
     # write out the dax
     dax_file = 'workflow/generated/%s__%s.xml' % (date, scan_name)
+    if not os.path.isdir(os.path.dirname(dax_file)):
+        os.makedirs(os.path.dirname(dax_file))
     f = open(dax_file, 'w')
     dax.writeXML(f)
     f.close()
