@@ -124,7 +124,7 @@ def process_raw_filelist():
                 if scan and scan != curr_scan:
                     if len(scan_list) > 0:
                         print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
-                        create_scan_dax(curr_scan, scan_list)
+                        create_scan_dax(date, curr_scan, scan_list)
 
                     scan_list = []
                     curr_scan = scan
@@ -134,7 +134,7 @@ def process_raw_filelist():
 
     if len(scan_list) > 0:
         print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
-        create_scan_dax(curr_scan, scan_list)
+        create_scan_dax(date, curr_scan, scan_list)
 
 def get_scan_from_metadata(meta):
     """
@@ -174,7 +174,7 @@ def create_job(script, args, inputs, outputs):
     #job.addProfile(Profile(Namespace.PEGASUS, 'clusters.size', '20'))
     return job
 
-def create_scan_dax(scan_name, scan_list):
+def create_scan_dax(date, scan_name, scan_list):
     """
     register all jobs in stereoTop workflow and create dax file for single scan
     """
@@ -391,7 +391,7 @@ def create_scan_dax(scan_name, scan_list):
     dax.addJob(job)
 
     # write out the dax
-    dax_file = 'workflow/generated/%s.xml' % scan_name
+    dax_file = 'workflow/generated/%s__%s.xml' % (date, scan_name)
     f = open(dax_file, 'w')
     dax.writeXML(f)
     f.close()
