@@ -180,6 +180,10 @@ def create_scan_dax(date, scan_name, scan_list):
     """
     dax = ADAG('stereo_rgb_'+scan_name)
 
+    # TODO: Checks for existing files that skip certain jobs if they don't need to be run?
+
+    # TODO: Implement plot clipping outputs alongside the existing pipeline
+
     count = 0
     fieldmosaic_inputs = []
     fieldmosaic_quality_inputs = []
@@ -241,7 +245,7 @@ def create_scan_dax(date, scan_name, scan_list):
 
         # JOB
         args = [out_left, out_right, out_qual_left, out_nrmac]
-        inputs = [out_left_daxf, out_right_daxf, in_meta_daxf]
+        inputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         outputs = [out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         job = create_job('nrmac.sh', args, inputs, outputs)
         dax.addJob(job)
@@ -275,7 +279,8 @@ def create_scan_dax(date, scan_name, scan_list):
     if not os.path.isdir(os.path.dirname(file_paths_q)):
         os.makedirs(os.path.dirname(file_paths_q))
     with open(file_paths_q, 'w') as j:
-        json.dump(sorted(fieldmosaic_quality_inputs), j)
+        for path in fieldmosaic_quality_inputs:
+            j.write("%s\n" % path)
     fieldmosaic_quality_json = File(my_lfn(file_paths_q))
     dax.addFile(fieldmosaic_quality_json)
 
@@ -310,7 +315,8 @@ def create_scan_dax(date, scan_name, scan_list):
     if not os.path.isdir(os.path.dirname(file_paths)):
         os.makedirs(os.path.dirname(file_paths))
     with open(file_paths, 'w') as j:
-        json.dump(sorted(fieldmosaic_inputs), j)
+        for path in fieldmosaic_inputs:
+            j.write("%s\n" % path)
     fieldmosaic_json = File(my_lfn(file_paths))
     dax.addFile(fieldmosaic_json)
 

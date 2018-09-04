@@ -6,7 +6,6 @@ import json
 import numpy as np
 from PIL import Image, ImageFilter
 
-from terrautils.metadata import clean_metadata
 from terrautils.spatial import geojson_to_tuples
 from terrautils.formats import create_geotiff
 import terraref.stereo_rgb
@@ -59,10 +58,8 @@ def nrmac(imgfile):
     return NRMAC
 
 
-logger.debug("Cleaning metadata.json contents")
 with open(args.meta, 'r') as mdfile:
-    j = json.load(mdfile)
-    md = clean_metadata(j, "stereoTop")
+    md = json.load(mdfile)
 
 lbounds = geojson_to_tuples(md['spatial_metadata']['left']['bounding_box'])
 rbounds = geojson_to_tuples(md['spatial_metadata']['right']['bounding_box'])

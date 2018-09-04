@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import argparse
 import logging
 import os
@@ -39,6 +41,7 @@ def stitch_jsonfile(jsonfile, out_full):
         subprocess.call(cmd, shell=True)
 
         logger.debug("Generating PNG 10% thumbnail")
+        Image.MAX_IMAGE_PIXELS = None
         px_img = Image.open(out_medium)
         px_img.save(out_png)
 
