@@ -9,6 +9,7 @@ from Pegasus.DAX3 import *
 
 root_dir = "/data/terraref/sites/"
 limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
+scan_size_limit = 10
 execution_env = 'condor_pool'
 dry_run = True
 
@@ -128,6 +129,11 @@ def process_raw_filelist():
 
                     scan_list = []
                     curr_scan = scan
+
+                elif len(scan_list) > scan_size_limit and scan_size_limit > 0:
+                    print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
+                    create_scan_dax(date, curr_scan, scan_list)
+                    return
 
                 # TODO: What do we do if there is no scan in the metadata? "unknown_scan_{date}"?
                 scan_list.append({"left": lbin, "right": rbin, "metadata": meta})
