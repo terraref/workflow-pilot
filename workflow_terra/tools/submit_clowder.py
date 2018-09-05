@@ -143,4 +143,5 @@ def upload_to_clowder(dir, type, scan):
         with open(os.path.join(dir, "clowder_ids.json"), 'w') as js:
             js.write(json.dumps(output_ids))
 
-upload_to_clowder(args.dir, args.type, args.scan)
+print("Submission to Clowder would happen now")
+#upload_to_clowder(args.dir, args.type, args.scan)
