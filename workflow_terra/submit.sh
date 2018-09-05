@@ -43,7 +43,7 @@ envsubst < sites.template.xml > workflow/generated/sites.xml
 ./tc-generator.sh $EXEC_ENV >workflow/generated/tc.data
 
 # generate the workflow
-#./workflow_generator.py
+./workflow_generator.py
 
 # plan and submit
 pegasus-plan \
