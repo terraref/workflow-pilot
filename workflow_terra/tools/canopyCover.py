@@ -5,9 +5,7 @@ import os
 import json
 import yaml
 import logging
-import subprocess
 from numpy import asarray, rollaxis, zeros_like, count_nonzero, array
-from osgeo import gdal, gdalnumeric, ogr
 
 from terrautils.gdal import clip_raster, centroid_from_geojson
 from terrautils.betydb import get_site_boundaries
@@ -89,8 +87,6 @@ for plotname in all_plots:
             if len(pxarray.shape) < 3:
                 logger.error("unexpected array shape for %s (%s)" % (plotname, pxarray.shape))
                 continue
-
-            print(bounds)
 
             ccVal = terraref.stereo_rgb.calculate_canopycover(pxarray)
 
