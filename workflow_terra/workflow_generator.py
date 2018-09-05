@@ -278,8 +278,13 @@ def create_scan_dax(date, scan_name, scan_list):
         """
         ----- Clowder submission (upload bin2tif files to Clowder) -----
         """
-        clowder_ids = rgb_geotiff_out_dir+'clowder_ids.json'
-        out_cid_daxf = File(my_lfn(clowder_ids))
+        if dry_run:
+            clowder_ids = 'workflow/json/rgb_'+scan_name+'_clowder_ids.json'
+            out_cid_daxf = File(my_lfn(clowder_ids))
+            out_cid_daxf.addPFN(my_pfn(top_dir+"/"+clowder_ids))
+        else:
+            clowder_ids = rgb_geotiff_out_dir+scan_name+'_clowder_ids.json'
+            out_cid_daxf = File(my_lfn(clowder_ids))
         args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         outputs = [out_cid_daxf]
@@ -394,8 +399,13 @@ def create_scan_dax(date, scan_name, scan_list):
     """
     ----- Clowder submission (upload bin2tif files to Clowder) -----
     """
-    clowder_ids = fullfield_out_dir+scan_name+'_clowder_ids.json'
-    out_cid_daxf = File(my_lfn(clowder_ids))
+    if dry_run:
+        clowder_ids = 'workflow/json/ff_'+scan_name+'_clowder_ids.json'
+        out_cid_daxf = File(my_lfn(clowder_ids))
+        out_cid_daxf.addPFN(my_pfn(top_dir+"/"+clowder_ids))
+    else:
+        clowder_ids = fullfield_out_dir+scan_name+'_clowder_ids.json'
+        out_cid_daxf = File(my_lfn(clowder_ids))
     args = ['fullfield', scan_name, fullfield_out_dir]
     inputs = ([fieldmosaic_quality_json, fieldmosaic_json] +
               list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs)) +
@@ -407,8 +417,13 @@ def create_scan_dax(date, scan_name, scan_list):
     """
     ----- BETY submission (upload trait CSVs) -----
     """
-    bety_ids = fullfield_out_dir+scan_name+'_bety_ids.json'
-    out_bety_daxf = File(my_lfn(bety_ids))
+    if dry_run:
+        bety_ids = 'workflow/json/'+scan_name+'_bety_ids.json'
+        out_bety_daxf = File(my_lfn(bety_ids))
+        out_bety_daxf.addPFN(my_pfn(top_dir+"/"+bety_ids))
+    else:
+        bety_ids = fullfield_out_dir+scan_name+'_bety_ids.json'
+        out_bety_daxf = File(my_lfn(bety_ids))
     args = ['bety', 'canopy_cover', cc_bety]
     inputs = [cc_bety_daxf]
     outputs = [out_bety_daxf]
@@ -418,8 +433,13 @@ def create_scan_dax(date, scan_name, scan_list):
     """
     ----- Geostreams submission (upload geo CSVs - requires fullfield Clowder ID) -----
     """
-    geo_ids = fullfield_out_dir+scan_name+'_geo_ids.json'
-    out_geo_daxf = File(my_lfn(geo_ids))
+    if dry_run:
+        geo_ids = 'workflow/json/'+scan_name+'_geo_ids.json'
+        out_geo_daxf = File(my_lfn(geo_ids))
+        out_geo_daxf.addPFN(my_pfn(top_dir+"/"+geo_ids))
+    else:
+        geo_ids = fullfield_out_dir+scan_name+'_geo_ids.json'
+        out_geo_daxf = File(my_lfn(geo_ids))
     args = ['geo', 'canopy_cover', cc_geo]
     inputs = [clowder_ids, cc_geo_daxf]
     outputs = [out_geo_daxf]
