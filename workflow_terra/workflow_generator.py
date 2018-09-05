@@ -92,7 +92,7 @@ def generate_tools_list():
 
     out = []
     for t in toollist:
-        path = File(t)
+        path = File(my_lfn(t))
         path.addPFN(my_pfn(top_dir+"/"+t))
         out.append(path)
 
