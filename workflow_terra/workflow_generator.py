@@ -300,7 +300,7 @@ def create_scan_dax(date, scan_name, scan_list):
     # INPUT
     if dry_run:
         file_paths_q = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
-        fieldmosaic_quality_json = File(file_paths_q)
+        fieldmosaic_quality_json = File(my_lfn(file_paths_q))
         fieldmosaic_quality_json.addPFN(my_pfn(top_dir+"/"+file_paths_q))
         dax.addFile(fieldmosaic_quality_json)
     else:
@@ -339,7 +339,7 @@ def create_scan_dax(date, scan_name, scan_list):
     # INPUT
     if dry_run:
         file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, day, scan_name)
-        fieldmosaic_json = File(file_paths)
+        fieldmosaic_json = File(my_lfn(file_paths))
         fieldmosaic_json.addPFN(my_pfn(top_dir+"/"+file_paths))
         dax.addFile(fieldmosaic_json)
     else:
