@@ -10,12 +10,13 @@ OUT_RIGHT=`echo "$5" | sed 's;___;/;g'`
 OUT_JSON=`echo "$6" | sed 's;___;/;g'`
 
 # touch the outputs so we don't get held jobs in case of failures
-touch $4 $5
+touch $4 $5 $6
 
 # condor pool?
 if [ "$1" != "$IN_LEFT" ]; then
     cp $1 $IN_LEFT
     cp $2 $IN_RIGHT
+    cp $3 $IN_META
 fi
 
 chmod 755 nrmac.py

@@ -12,4 +12,3 @@ fi
 
 chmod 755 canopyCover.py
 ./canopyCover.py -i $IMAGE
-
