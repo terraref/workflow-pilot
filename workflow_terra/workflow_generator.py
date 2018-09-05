@@ -294,15 +294,18 @@ def create_scan_dax(date, scan_name, scan_list):
     # INPUT
     if dry_run:
         file_paths_q = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
+        fieldmosaic_quality_json = File(file_paths_q)
+        fieldmosaic_quality_json.addPFN(my_pfn(top_dir+"/"+file_paths_q))
+        dax.addFile(fieldmosaic_quality_json)
     else:
         file_paths_q = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, scan_name)
+        fieldmosaic_quality_json = File(my_lfn(file_paths_q))
+        dax.addFile(fieldmosaic_quality_json)
     if not os.path.isdir(os.path.dirname(file_paths_q)):
         os.makedirs(os.path.dirname(file_paths_q))
     with open(file_paths_q, 'w') as j:
         for path in fieldmosaic_quality_inputs:
             j.write("%s\n" % path)
-    fieldmosaic_quality_json = File(my_lfn(file_paths_q))
-    dax.addFile(fieldmosaic_quality_json)
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
@@ -330,15 +333,18 @@ def create_scan_dax(date, scan_name, scan_list):
     # INPUT
     if dry_run:
         file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, day, scan_name)
+        fieldmosaic_json = File(file_paths)
+        fieldmosaic_json.addPFN(my_pfn(top_dir+"/"+file_paths))
+        dax.addFile(fieldmosaic_json)
     else:
         file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, scan_name)
+        fieldmosaic_json = File(my_lfn(file_paths))
+        dax.addFile(fieldmosaic_json)
     if not os.path.isdir(os.path.dirname(file_paths)):
         os.makedirs(os.path.dirname(file_paths))
     with open(file_paths, 'w') as j:
         for path in fieldmosaic_inputs:
             j.write("%s\n" % path)
-    fieldmosaic_json = File(my_lfn(file_paths))
-    dax.addFile(fieldmosaic_json)
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
