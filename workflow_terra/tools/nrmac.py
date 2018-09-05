@@ -8,7 +8,6 @@ from PIL import Image, ImageFilter
 
 from terrautils.spatial import geojson_to_tuples
 from terrautils.formats import create_geotiff
-import terraref.stereo_rgb
 
 
 logging.basicConfig(format='%(asctime)s %(message)s')
