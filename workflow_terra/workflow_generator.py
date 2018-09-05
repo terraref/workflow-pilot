@@ -7,6 +7,7 @@ import json
 from Pegasus.DAX3 import *
 
 
+top_dir = os.getcwd()
 root_dir = "/data/terraref/sites/"
 limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
 scan_size_limit = 10
@@ -79,7 +80,7 @@ def generate_tools_list():
     """
     return all python scripts in /tools directory
     """
-    return [
+    toollist = [
         "tools/bin2tif.py",
         "tools/nrmac.py",
         "tools/canopyCover.py",
@@ -88,6 +89,14 @@ def generate_tools_list():
         "tools/submit_bety.py",
         "tools/submit_geo.py"
     ]
+
+    out = []
+    for t in toollist:
+        path = File(my_lfn(t))
+        path.addPFN(my_pfn(top_dir+"/"+t))
+        out.append()
+
+    return out
 
 def process_raw_filelist():
     """
@@ -159,7 +168,7 @@ def get_scan_from_metadata(meta):
 
     return scan_name
 
-def create_job(script, args, inputs, outputs):
+def create_job(script, args, inputs, outputs, tools):
     """
     shorthand for defining a Job as part of a workflow
     """
@@ -168,7 +177,7 @@ def create_job(script, args, inputs, outputs):
         job.addArguments(arg)
 
     # all jobs will have access to python scripts
-    for tool in generate_tools_list():
+    for tool in tools:
         job.uses(tool, link=Link.INPUT)
 
     for input in inputs:
@@ -185,6 +194,11 @@ def create_scan_dax(date, scan_name, scan_list):
     register all jobs in stereoTop workflow and create dax file for single scan
     """
     dax = ADAG('stereo_rgb_'+scan_name)
+
+    # Add tools to dax
+    tools = generate_tools_list()
+    for tool in tools:
+        dax.addFile(tool)
 
     # TODO: Checks for existing files that skip certain jobs if they don't need to be run?
 
@@ -235,7 +249,7 @@ def create_scan_dax(date, scan_name, scan_list):
         args = [in_left, in_right, in_meta, out_left, out_right, out_meta, ts]
         inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
-        job = create_job('bin2tif.sh', args, inputs, outputs)
+        job = create_job('bin2tif.sh', args, inputs, outputs, tools)
         dax.addJob(job)
 
         """
@@ -253,7 +267,7 @@ def create_scan_dax(date, scan_name, scan_list):
         args = [out_left, out_right, out_qual_left, out_nrmac]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         outputs = [out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
-        job = create_job('nrmac.sh', args, inputs, outputs)
+        job = create_job('nrmac.sh', args, inputs, outputs, tools)
         dax.addJob(job)
 
         # needed for upcoming stitching
@@ -268,7 +282,7 @@ def create_scan_dax(date, scan_name, scan_list):
         args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         outputs = [clowder_ids]
-        job = create_job('submitter.sh', args, inputs, outputs)
+        job = create_job('submitter.sh', args, inputs, outputs, tools)
         dax.addJob(job)
 
     # fullfield mosaics and canopy cover CSVs end up here
@@ -307,7 +321,7 @@ def create_scan_dax(date, scan_name, scan_list):
     args = [file_paths_q, scan_name, 'true']
     inputs = fieldmosaic_quality_inputs + [fieldmosaic_quality_json]
     outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs))
-    job = create_job('fieldmosaic.sh', args, inputs, outputs)
+    job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
     """
@@ -351,7 +365,7 @@ def create_scan_dax(date, scan_name, scan_list):
     args = [file_paths, scan_name, 'false']
     inputs = fieldmosaic_inputs + [fieldmosaic_json]
     outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_outputs))
-    job = create_job('fieldmosaic.sh', args, inputs, outputs)
+    job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
     """
@@ -367,7 +381,7 @@ def create_scan_dax(date, scan_name, scan_list):
     args = [canopy_cover_input, scan_name, full_resolution_geotiff]
     inputs = [canopy_cover_input_daxf]
     outputs = [cc_bety_daxf, cc_geo_daxf]
-    job = create_job('canopy_cover.sh', args, inputs, outputs)
+    job = create_job('canopy_cover.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
     """
@@ -379,7 +393,7 @@ def create_scan_dax(date, scan_name, scan_list):
               list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs)) +
               list(map(lambda x: File(my_lfn(x)), fieldmosaic_inputs)))
     outputs = [clowder_ids]
-    job = create_job('submitter.sh', args, inputs, outputs)
+    job = create_job('submitter.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
     """
@@ -389,7 +403,7 @@ def create_scan_dax(date, scan_name, scan_list):
     args = ['bety', 'canopy_cover', cc_bety]
     inputs = [cc_bety_daxf]
     outputs = [bety_ids]
-    job = create_job('submitter.sh', args, inputs, outputs)
+    job = create_job('submitter.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
     """
@@ -399,7 +413,7 @@ def create_scan_dax(date, scan_name, scan_list):
     args = ['geo', 'canopy_cover', cc_geo]
     inputs = [clowder_ids, cc_geo_daxf]
     outputs = [geo_ids]
-    job = create_job('submitter.sh', args, inputs, outputs)
+    job = create_job('submitter.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
     # write out the dax
