@@ -49,6 +49,14 @@ tr canopy_cover.sh {
     }
 }
 
+tr submitter.sh {
+    site local {
+        type "STAGEABLE"
+        container "terraref"
+        pfn "file://$PWD/wrappers/submitter.sh"
+    }
+}
+
 EOF
 
 else
