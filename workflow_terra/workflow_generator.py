@@ -441,7 +441,7 @@ def create_scan_dax(date, scan_name, scan_list):
         geo_ids = fullfield_out_dir+scan_name+'_geo_ids.json'
         out_geo_daxf = File(my_lfn(geo_ids))
     args = ['geo', 'canopy_cover', cc_geo]
-    inputs = [clowder_ids, cc_geo_daxf]
+    inputs = [out_cid_daxf, cc_geo_daxf]
     outputs = [out_geo_daxf]
     job = create_job('submitter.sh', args, inputs, outputs, tools)
     dax.addJob(job)
