@@ -2,9 +2,9 @@
 
 set -e
 
-TOP_DIR=`dirname $0`
-TOP_DIR=`cd $TOP_DIR/.. && pwd`
-cd $TOP_DIR
+#TOP_DIR=`dirname $0`
+#TOP_DIR=`cd $TOP_DIR/.. && pwd`
+#cd $TOP_DIR
 
 # exec env
 EXEC_ENV="condor_pool"
