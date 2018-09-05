@@ -228,13 +228,13 @@ def create_scan_dax(date, scan_name, scan_list):
         in_right = fileset["right"]
         in_meta = fileset["metadata"]
         in_left_daxf = File(my_lfn(fileset["left"]))
-        in_left_daxf.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["left"]))))
+        in_left_daxf.addPFN(my_pfn(fileset["left"]))
         dax.addFile(in_left_daxf)
         in_right_daxf = File(my_lfn(fileset["right"]))
-        in_right_daxf.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["right"]))))
+        in_right_daxf.addPFN(my_pfn(fileset["right"]))
         dax.addFile(in_right_daxf)
         in_meta_daxf = File(my_lfn(fileset["metadata"]))
-        in_meta_daxf.addPFN(my_pfn(os.path.join(ts, os.path.basename(fileset["metadata"]))))
+        in_meta_daxf.addPFN(my_pfn(fileset["metadata"]))
         dax.addFile(in_meta_daxf)
 
         # OUTPUT
