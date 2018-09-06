@@ -13,7 +13,8 @@ TIMESTAMP=`echo "$7"`
 IN_DIR=`dirname $IN_LEFT`
 OUT_DIR=`dirname $OUT_LEFT`
 
-mkdir -p $IN_DIR $OUT_DIR
+echo "mkdir -p $IN_DIR $OUT_DIR"
+mkdir -p $OUT_DIR
 
 # touch the outputs so we don't get held jobs in case of failures
 touch $4 $5 $6
