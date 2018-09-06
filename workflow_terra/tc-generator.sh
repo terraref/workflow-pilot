@@ -6,7 +6,7 @@ if [ "X$1" == "Xcondor_pool" ]; then
 
 cont terraref {
     type "singularity"
-    image "http://workflow.isi.edu/TERRAREF/terraref.img"
+    image "/images/terraref.img"
 }
 
 tr bin2tif.sh {
