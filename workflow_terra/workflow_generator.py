@@ -13,7 +13,7 @@ scan_size_limit = 1
 execution_env = 'condor_pool'
 dry_run = True
 
-if dry_run:
+if not dry_run:
     root_dir = "/data/terraref/sites/"
 else:
     root_dir = top_dir+"/workflow/sites/"
