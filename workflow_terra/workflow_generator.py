@@ -140,6 +140,8 @@ def process_raw_filelist():
                     if len(scan_list) > 0:
                         print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
                         create_scan_dax(date, curr_scan, scan_list)
+                        # TODO: Temporary
+                        return
 
                     scan_list = []
                     curr_scan = scan
@@ -253,12 +255,11 @@ def create_scan_dax(date, scan_name, scan_list):
         out_meta_daxf = File(my_lfn(out_meta))
 
         # JOB
-        args = [in_left, in_right, in_meta, out_left, out_right, out_meta, ts]
+        args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts]
         inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)
         dax.addJob(job)
-
 
 
         # TODO: TEMPORARY
@@ -270,10 +271,6 @@ def create_scan_dax(date, scan_name, scan_list):
         dax.writeXML(f)
         f.close()
         return
-
-
-
-
 
 
         """
