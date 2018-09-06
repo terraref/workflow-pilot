@@ -268,6 +268,7 @@ def create_scan_dax(date, scan_name, scan_list):
         f = open(dax_file, 'w')
         dax.writeXML(f)
         f.close()
+        return
 
 
 
