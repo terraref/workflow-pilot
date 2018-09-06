@@ -86,19 +86,19 @@ def generate_tools_list():
     return all python scripts in /tools directory
     """
     toollist = [
-        "tools/bin2tif.py",
-        "tools/nrmac.py",
-        "tools/canopyCover.py",
-        "tools/fieldmosaic.py",
-        "tools/submit_clowder.py",
-        "tools/submit_bety.py",
-        "tools/submit_geo.py"
+        "bin2tif.py",
+        "nrmac.py",
+        "canopyCover.py",
+        "fieldmosaic.py",
+        "submit_clowder.py",
+        "submit_bety.py",
+        "submit_geo.py"
     ]
 
     out = []
     for t in toollist:
-        path = File(my_lfn(t))
-        path.addPFN(my_pfn(top_dir+"/"+t))
+        path = File(t)
+        path.addPFN(my_pfn(top_dir+"/tools/"+t))
         out.append(path)
 
     return out
