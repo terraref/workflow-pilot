@@ -5,8 +5,8 @@ if [ "X$1" == "Xcondor_pool" ]; then
     cat <<EOF
 
 cont terraref {
-    type "singularity"
-    image "docker://terraref/workflow-pilot"
+    type "docker"
+    image "docker:///terraref/workflow-pilot:latest"
 }
 
 tr bin2tif.sh {
