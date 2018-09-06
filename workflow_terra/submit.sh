@@ -55,7 +55,7 @@ pegasus-plan \
     --cleanup leaf \
     --relative-dir $RUN_ID \
     --dir $RUN_DIR \
-    --dax workflow/generated/2018-07-01__stereovis_ir_sensors_partialplots_sorghum6_shade_flir_eastedge_mn_14140c8a-e13a-4ccd-a120-d3dbf3eacef4.xml \
+    --dax workflow/generated/singletest.xml \
     --submit 
 
 

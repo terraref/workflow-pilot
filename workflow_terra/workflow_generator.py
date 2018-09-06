@@ -9,7 +9,7 @@ from Pegasus.DAX3 import *
 
 top_dir = os.getcwd()
 limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
-scan_size_limit = 10
+scan_size_limit = 1
 execution_env = 'condor_pool'
 dry_run = True
 
@@ -257,6 +257,22 @@ def create_scan_dax(date, scan_name, scan_list):
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)
         dax.addJob(job)
+
+
+
+        # TODO: TEMPORARY
+        # write out the dax
+        dax_file = 'workflow/generated/singletest.xml' % (date, scan_name)
+        if not os.path.isdir(os.path.dirname(dax_file)):
+            os.makedirs(os.path.dirname(dax_file))
+        f = open(dax_file, 'w')
+        dax.writeXML(f)
+        f.close()
+
+
+
+
+
 
         """
         ----- nrmac (determine quality score of input geoTIFF and create low-res output geoTIFF) -----
