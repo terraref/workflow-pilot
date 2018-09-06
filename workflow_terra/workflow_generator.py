@@ -109,11 +109,11 @@ def process_raw_filelist():
     scan_list = []
     curr_scan = ""
 
-    dates = sorted(os.listdir(os.path.join(root_dir, "ua-mac/raw_data/stereoTop")))
+    dates = sorted(os.listdir(os.path.join("/data/terraref/sites/", "ua-mac/raw_data/stereoTop")))
     for date in dates:
         if date not in limit_dates:
             continue
-        date_dir = os.path.join(os.path.join(root_dir, "ua-mac/raw_data/stereoTop"), date)
+        date_dir = os.path.join(os.path.join("/data/terraref/sites/", "ua-mac/raw_data/stereoTop"), date)
 
         timestamps = sorted(os.listdir(date_dir))
         for ts in timestamps:
