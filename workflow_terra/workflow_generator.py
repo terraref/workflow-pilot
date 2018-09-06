@@ -255,7 +255,7 @@ def create_scan_dax(date, scan_name, scan_list):
         out_meta_daxf = File(my_lfn(out_meta))
 
         # JOB
-        args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts]
+        args = [in_left, in_right, in_meta, out_left_daxf, out_right_daxf, out_meta_daxf, ts]
         inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)
