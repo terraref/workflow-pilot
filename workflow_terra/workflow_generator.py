@@ -8,6 +8,7 @@ from Pegasus.DAX3 import *
 
 
 top_dir = os.getcwd()
+scan_root = "/data/terraref/sites/"
 limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
 scan_size_limit = 1
 execution_env = 'condor_pool'
@@ -109,11 +110,11 @@ def process_raw_filelist():
     scan_list = []
     curr_scan = ""
 
-    dates = sorted(os.listdir(os.path.join("/data/terraref/sites/", "ua-mac/raw_data/stereoTop")))
+    dates = sorted(os.listdir(os.path.join(scan_root, "ua-mac/raw_data/stereoTop")))
     for date in dates:
         if date not in limit_dates:
             continue
-        date_dir = os.path.join(os.path.join("/data/terraref/sites/", "ua-mac/raw_data/stereoTop"), date)
+        date_dir = os.path.join(os.path.join(scan_root, "ua-mac/raw_data/stereoTop"), date)
 
         timestamps = sorted(os.listdir(date_dir))
         for ts in timestamps:
@@ -222,7 +223,7 @@ def create_scan_dax(date, scan_name, scan_list):
             fieldmosaic_day = day
 
         # converted geoTIFFs, quality score JSON and quality score geoTIFF end up here
-        rgb_geotiff_out_dir = os.path.join(root_dir, 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts))
+        rgb_geotiff_out_dir = 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts)
         if not os.path.exists(rgb_geotiff_out_dir):
             os.makedirs(rgb_geotiff_out_dir)
 
@@ -315,7 +316,7 @@ def create_scan_dax(date, scan_name, scan_list):
         dax.addJob(job)
 
     # fullfield mosaics and canopy cover CSVs end up here
-    fullfield_out_dir = os.path.join(root_dir, 'ua-mac/Level_1/fullfield/%s/' % day)
+    fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % day
     if not os.path.exists(fullfield_out_dir):
         os.makedirs(fullfield_out_dir)
 
