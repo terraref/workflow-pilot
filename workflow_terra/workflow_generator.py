@@ -8,11 +8,15 @@ from Pegasus.DAX3 import *
 
 
 top_dir = os.getcwd()
-root_dir = "/data/terraref/sites/"
 limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
 scan_size_limit = 10
 execution_env = 'condor_pool'
 dry_run = True
+
+if dry_run:
+    root_dir = "/data/terraref/sites/"
+else:
+    root_dir = top_dir+"/workflow/sites/"
 
 
 def add_merge_job(dax, final_name, chunk, level, job_number, final):
@@ -219,6 +223,8 @@ def create_scan_dax(date, scan_name, scan_list):
 
         # converted geoTIFFs, quality score JSON and quality score geoTIFF end up here
         rgb_geotiff_out_dir = os.path.join(root_dir, 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts))
+        if not os.path.exists(rgb_geotiff_out_dir):
+            os.makedirs(rgb_geotiff_out_dir)
 
         """
         ----- bin2tif (convert raw BIN files to geoTIFFs) -----
@@ -293,6 +299,8 @@ def create_scan_dax(date, scan_name, scan_list):
 
     # fullfield mosaics and canopy cover CSVs end up here
     fullfield_out_dir = os.path.join(root_dir, 'ua-mac/Level_1/fullfield/%s/' % day)
+    if not os.path.exists(fullfield_out_dir):
+        os.makedirs(fullfield_out_dir)
 
     """
     ----- fieldmosaic QAQC (create fullfield stitch of the nrmac quality geoTIFFs) -----
