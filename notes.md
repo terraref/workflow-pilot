@@ -1,14 +1,14 @@
 # Notes from Pegasus/Condor integration for TERRA-REF
 
-Ran into several problems getting Docker, Singularity or even just straight python working.
+We've started integrating with the TERRA-REF pipeline based on the pilot workflow example https://github.com/terraref/workflow-pilot/tree/master/workflow. This documents a few of the problems we encountered along the way.
 
 ## LFN and PFN
 
-* The LFN is not just a label, it's the name of the copied file in the working directory during execution
+We've had some difficulty understanding the role of LFNs and PFNs. At first, we understood the LFN to simply be a label for reference, but it is also the name of the file in the working directory during execution. The process of replacing `/` with `___` was also problematic, as we used fully-qualified paths (which we now understand should've been relative).
 
 ## `nobody`?
 
-Jobs running as `nobody` were a bit of a surprise:
+We ran into problems with access to the `docker` daemon or when `pip` installing Python packages. It was a surprise to find that jobs were running as `nobody` and not `centos`. This was due to a condor configuration related to the `UID_DOMAIN` and resolved via:
 
 ```
 vi /etc/condor/config.d/50-central-manager.config
@@ -17,10 +17,11 @@ sudo systemctl restart condor
 ```
 
 ## Debugging
-Lots of lessons learned in debugging
+
+Debugging problems was challening. 
 * `pegasus-status` is useful
 * `pegasus-analyzer` is even more useful
-* sudo ls -lR /var/lib/condor/execute can show the current state of things
+* `sudo ls -lR /var/lib/condor/execute` can show the current state of things in condor
 * Don't forget the condor tools, e.g., `condor_q`
 
 
@@ -42,4 +43,10 @@ From: terraref/workflow-pilot
 ## /data, symlinks, and container
 * Symlinking seems to be the right approach for what we're trying to achieve https://pegasus.isi.edu/documentation/transfer.php#transfer_symlink
 * But apparently it's disabled when using containers
+
+
+## Using the UIUC Condor Cluster
+
+`ssh htc-login.campuscluster.illinois.edu`
+
 
