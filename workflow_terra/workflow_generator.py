@@ -232,7 +232,6 @@ def create_scan_dax(date, scan_name, scan_list):
 
     # TODO: Implement plot clipping outputs alongside the existing pipeline
 
-    count = 0
     fieldmosaic_inputs = []
     fieldmosaic_quality_inputs = []
 
@@ -315,7 +314,6 @@ def create_scan_dax(date, scan_name, scan_list):
         # needed for upcoming stitching
         fieldmosaic_inputs.append(out_left)
         fieldmosaic_quality_inputs.append(out_qual_left)
-        count += 1
 
         """
         ----- Clowder submission (upload bin2tif files to Clowder) -----
