@@ -7,7 +7,7 @@ set -e
 #cd $TOP_DIR
 
 # exec env
-EXEC_ENV="condor_pool"
+EXEC_ENV="uiuc_shared"
 case $EXEC_ENV in
     "condor_pool")
         EXEC_SITE="condor_pool"

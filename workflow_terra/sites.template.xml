@@ -11,6 +11,7 @@
         <directory type="local-storage" path="$RUN_DIR/outputs">
             <file-server operation="all" url="file://$RUN_DIR/outputs"/>
         </directory>
+        <profile namespace="pegasus" key="transfer.links" >True</profile>
     </site>
 
     <site  handle="condor_pool" arch="x86_64" os="LINUX">
@@ -35,6 +36,20 @@
         <profile namespace="condor" key="request_memory" >1 GB</profile>
         <profile namespace="condor" key="request_disk" >2 GB</profile>
         <profile namespace="env" key="PEGASUS_HOME" >/lizard/scratch-90-days/bamboo/installs/pegasus-4.9.0dev</profile>
+    </site>
+
+    <site  handle="uiuc_shared" arch="x86_64" os="LINUX">
+        <profile namespace="pegasus" key="data.configuration" >condorio</profile>
+        <profile namespace="pegasus" key="style" >condor</profile>
+        <profile namespace="pegasus" key="style">condorc</profile>
+        <profile namespace="env" key="PEGASUS_HOME" >/usr</profile>
+        <profile namespace="condor" key="universe" >vanilla</profile>
+        <profile namespace="condor" key="request_memory" >1 GB</profile>
+        <profile namespace="condor" key="request_disk" >2 GB</profile>
+        <profile namespace="condor" key="condor_collector">htc-hn01.campuscluster.illinois.edu</profile>
+        <profile namespace="condor" key="should_transfer_files">Yes</profile>
+        <profile namespace="condor" key="when_to_transfer_output">ON_EXIT</profile>
+        <profile namespace="condor" key="universe">vanilla</profile>
     </site>
 
 </sitecatalog>

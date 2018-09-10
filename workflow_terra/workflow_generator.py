@@ -69,6 +69,8 @@ def my_lfn(orig_lfn):
     lfn = orig_lfn
     if execution_env == 'condor_pool':
         lfn = re.sub(r'/', '___', orig_lfn)
+
+    lfn = re.sub(r'^___', '', lfn)
     return lfn
 
 def my_pfn(orig_path):
@@ -202,6 +204,12 @@ def create_scan_dax(date, scan_name, scan_list):
     """
     dax = ADAG('stereo_rgb_'+scan_name)
 
+    # TODO: Revisit
+    sensor_metadata = scan_root + "ua-mac/sensor-metadata//sensors/stereo/sensor_fixed_metadata.json"
+    sensor_metadata_daxf = File(my_lfn(sensor_metadata))
+    sensor_metadata_daxf.addPFN(my_pfn(sensor_metadata))
+    dax.addFile(sensor_metadata_daxf)
+
     # Add tools to dax
     tools = generate_tools_list()
     for tool in tools:
@@ -255,8 +263,8 @@ def create_scan_dax(date, scan_name, scan_list):
         out_meta_daxf = File(my_lfn(out_meta))
 
         # JOB
-        args = [in_left, in_right, in_meta, out_left_daxf, out_right_daxf, out_meta_daxf, ts]
-        inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
+        args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts, sensor_metadata_daxf]
+        inputs = [in_left_daxf, in_right_daxf, in_meta_daxf, sensor_metadata_daxf]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)
         dax.addJob(job)

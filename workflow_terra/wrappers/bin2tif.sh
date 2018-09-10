@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -x
 
 IN_LEFT=`echo "$1" | sed 's;___;/;g'`
 IN_RIGHT=`echo "$2" | sed 's;___;/;g'`
@@ -9,12 +10,21 @@ OUT_LEFT=`echo "$4" | sed 's;___;/;g'`
 OUT_RIGHT=`echo "$5" | sed 's;___;/;g'`
 OUT_META=`echo "$6" | sed 's;___;/;g'`
 TIMESTAMP=`echo "$7"`
+FIXED_META=`echo "$8" | sed 's;___;/;g'`
 
 IN_DIR=`dirname $IN_LEFT`
 OUT_DIR=`dirname $OUT_LEFT`
+META_DIR=`dirname $FIXED_META`
 
-echo "mkdir -p $IN_DIR $OUT_DIR"
-mkdir -p $OUT_DIR
+mkdir -p $IN_DIR $OUT_DIR $META_DIR
+OUT_DIR="."
+
+whoami
+echo $HOME
+
+export BETYDB_KEY=GZJZWnJpnDBhmKk7k6vb46z6lW6vjxSniRivRl2I
+export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
+env
 
 # touch the outputs so we don't get held jobs in case of failures
 touch $4 $5 $6
@@ -24,6 +34,7 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp $1 $IN_LEFT
     cp $2 $IN_RIGHT
     cp $3 $IN_META
+    cp $8 $FIXED_META
 fi
 
 chmod 755 bin2tif.py

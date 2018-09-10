@@ -9,6 +9,11 @@ cont terraref {
     image "docker:///terraref/workflow-pilot:latest"
 }
 
+cont terraref_sing {
+    type "singularity"
+    image "http://localhost/terraref.img"
+}
+
 tr bin2tif.sh {
     site local {
         type "STAGEABLE"
