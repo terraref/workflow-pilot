@@ -480,4 +480,5 @@ def create_scan_dax(date, scan_name, scan_list):
     print("...wrote %s" % dax_file)
 
 
+# TODO: Download experiments.json from BETY and include in DAX (tools?)
 process_raw_filelist()
