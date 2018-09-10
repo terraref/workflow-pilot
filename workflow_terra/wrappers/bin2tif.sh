@@ -22,7 +22,7 @@ OUT_DIR="."
 whoami
 echo $HOME
 
-export BETYDB_KEY=GZJZWnJpnDBhmKk7k6vb46z6lW6vjxSniRivRl2I
+export BETYDB_KEY=
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 env
 

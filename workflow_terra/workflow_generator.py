@@ -6,6 +6,8 @@ import json
 
 from Pegasus.DAX3 import *
 
+from terrautils.betydb import dump_experiments
+
 
 top_dir = os.getcwd()
 scan_root = "/data/terraref/sites/"
@@ -87,6 +89,11 @@ def generate_tools_list():
     """
     return all python scripts in /tools directory
     """
+    out = []
+
+    # Set BETYDB_LOCAL_CACHE_FOLDER = /tools directory
+    dump_experiments()
+
     toollist = [
         "bin2tif.py",
         "nrmac.py",
@@ -94,14 +101,26 @@ def generate_tools_list():
         "fieldmosaic.py",
         "submit_clowder.py",
         "submit_bety.py",
-        "submit_geo.py"
+        "submit_geo.py",
+        "bety_experiments.json"
     ]
 
-    out = []
     for t in toollist:
         path = File(t)
         path.addPFN(my_pfn(top_dir+"/tools/"+t))
         out.append(path)
+
+    sensor_metadata_list = [
+        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/stereo/sensor_fixed_metadata.json"),
+        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/flirIrCamera/sensor_fixed_metadata.json"),
+        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/scanner3D/sensor_fixed_metadata.json"),
+        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/VNIR/sensor_fixed_metadata.json"),
+        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/scanalyzer/sensor_fixed_metadata.json")
+    ]
+    for sensor_metadata in sensor_metadata_list:
+        sensor_metadata_daxf = File(my_lfn(sensor_metadata))
+        sensor_metadata_daxf.addPFN(my_pfn(sensor_metadata))
+        out.append(sensor_metadata_daxf)
 
     return out
 
@@ -204,12 +223,6 @@ def create_scan_dax(date, scan_name, scan_list):
     """
     dax = ADAG('stereo_rgb_'+scan_name)
 
-    # TODO: Revisit
-    sensor_metadata = scan_root + "ua-mac/sensor-metadata//sensors/stereo/sensor_fixed_metadata.json"
-    sensor_metadata_daxf = File(my_lfn(sensor_metadata))
-    sensor_metadata_daxf.addPFN(my_pfn(sensor_metadata))
-    dax.addFile(sensor_metadata_daxf)
-
     # Add tools to dax
     tools = generate_tools_list()
     for tool in tools:
@@ -244,14 +257,14 @@ def create_scan_dax(date, scan_name, scan_list):
         in_left = fileset["left"]
         in_right = fileset["right"]
         in_meta = fileset["metadata"]
-        in_left_daxf = File(my_lfn(fileset["left"]))
-        in_left_daxf.addPFN(my_pfn(fileset["left"]))
+        in_left_daxf = File(my_lfn(in_left))
+        in_left_daxf.addPFN(my_pfn(in_left))
         dax.addFile(in_left_daxf)
-        in_right_daxf = File(my_lfn(fileset["right"]))
-        in_right_daxf.addPFN(my_pfn(fileset["right"]))
+        in_right_daxf = File(my_lfn(in_right))
+        in_right_daxf.addPFN(my_pfn(in_right))
         dax.addFile(in_right_daxf)
-        in_meta_daxf = File(my_lfn(fileset["metadata"]))
-        in_meta_daxf.addPFN(my_pfn(fileset["metadata"]))
+        in_meta_daxf = File(my_lfn(in_meta))
+        in_meta_daxf.addPFN(my_pfn(in_meta))
         dax.addFile(in_meta_daxf)
 
         # OUTPUT
