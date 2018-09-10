@@ -19,12 +19,8 @@ META_DIR=`dirname $FIXED_META`
 mkdir -p $IN_DIR $OUT_DIR $META_DIR
 OUT_DIR="."
 
-whoami
-echo $HOME
-
-export BETYDB_KEY=
+export BETYDB_LOCAL_CACHE_FOLDER=$PWD/../tools/
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
-env
 
 # touch the outputs so we don't get held jobs in case of failures
 touch $4 $5 $6

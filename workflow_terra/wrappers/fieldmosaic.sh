@@ -8,6 +8,8 @@ SINGLE=$3
 
 OUT_DIR=`dirname $JSON`
 
+export BETYDB_LOCAL_CACHE_FOLDER=$PWD/../tools/
+export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 
 if [ $SINGLE == 'true' ]; then
     if [ -e "rgb_geotiff_quality_${SCAN}.tar.gz" ]; then
