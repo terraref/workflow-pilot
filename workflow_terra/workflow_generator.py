@@ -106,9 +106,9 @@ def generate_tools_list():
     ]
 
     for t in toollist:
-        path = File(t)
-        path.addPFN(my_pfn(top_dir+"/tools/"+t))
-        out.append(path)
+        tool_daxf = File(t)
+        tool_daxf.addPFN(my_pfn(top_dir+"/tools/"+t))
+        out.append(tool_daxf)
 
     sensor_metadata_list = [
         os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/stereo/sensor_fixed_metadata.json"),
@@ -499,5 +499,4 @@ def create_scan_dax(date, scan_name, scan_list):
     print("...wrote %s" % dax_file)
 
 
-# TODO: Download experiments.json from BETY and include in DAX (tools?)
 process_raw_filelist()
