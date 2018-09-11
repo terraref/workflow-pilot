@@ -332,7 +332,7 @@ def create_scan_dax(date, scan_name, scan_list):
         dax.addJob(job)
 
     # fullfield mosaics and canopy cover CSVs end up here
-    fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % day
+    fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % fieldmosaic_day
     if not os.path.exists(fullfield_out_dir):
         os.makedirs(fullfield_out_dir)
 
@@ -341,12 +341,12 @@ def create_scan_dax(date, scan_name, scan_list):
     """
     # INPUT
     if dry_run:
-        file_paths_q = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, day, scan_name)
+        file_paths_q = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
         fieldmosaic_quality_json = File(my_lfn(file_paths_q))
         fieldmosaic_quality_json.addPFN(my_pfn(top_dir+"/"+file_paths_q))
         dax.addFile(fieldmosaic_quality_json)
     else:
-        file_paths_q = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (day, scan_name)
+        file_paths_q = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
         fieldmosaic_quality_json = File(my_lfn(file_paths_q))
         dax.addFile(fieldmosaic_quality_json)
     if not os.path.isdir(os.path.dirname(file_paths_q)):
@@ -380,12 +380,12 @@ def create_scan_dax(date, scan_name, scan_list):
     """
     # INPUT
     if dry_run:
-        file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, day, scan_name)
+        file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
         fieldmosaic_json = File(my_lfn(file_paths))
         fieldmosaic_json.addPFN(my_pfn(top_dir+"/"+file_paths))
         dax.addFile(fieldmosaic_json)
     else:
-        file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (day, scan_name)
+        file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, scan_name)
         fieldmosaic_json = File(my_lfn(file_paths))
         dax.addFile(fieldmosaic_json)
     if not os.path.isdir(os.path.dirname(file_paths)):
