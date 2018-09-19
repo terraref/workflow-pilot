@@ -24,11 +24,6 @@ case $EXEC_ENV in
         STAGING_SITE="isi_shared"
         OUTPUT_SITE="isi_shared"
         ;;
-    "uiuc_shared")
-        EXEC_SITE="uiuc_shared"
-        STAGING_SITE="uiuc_shared"
-        OUTPUT_SITE="uiuc_shared"
-        ;;
     *)
         echo "Unknown execution environment."
         exit 1
