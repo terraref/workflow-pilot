@@ -135,7 +135,8 @@ def process_raw_filelist():
     curr_scan = ""
 
     tools = generate_tools_list()
-
+    
+    print("Beginning scan of %s" % os.path.join(scan_root, "ua-mac/raw_data/stereoTop"))
     dates = sorted(os.listdir(os.path.join(scan_root, "ua-mac/raw_data/stereoTop")))
     for date in dates:
         if date not in limit_dates:
