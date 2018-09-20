@@ -141,6 +141,7 @@ def process_raw_filelist():
         if date not in limit_dates:
             continue
         date_dir = os.path.join(os.path.join(scan_root, "ua-mac/raw_data/stereoTop"), date)
+        print("Scanning %s" % date_dir)
 
         timestamps = sorted(os.listdir(date_dir))
         for ts in timestamps:
@@ -226,6 +227,10 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     register all jobs in stereoTop workflow and create dax file for single scan
     """
+
+    dax_file = 'workflow/generated/%s__%s.xml' % (date, scan_name)
+    print("Creating %s" % dax_file)
+
     dax = ADAG('stereo_rgb_'+scan_name)
 
     # Add tools to dax
