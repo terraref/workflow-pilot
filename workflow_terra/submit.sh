@@ -30,6 +30,9 @@ case $EXEC_ENV in
         ;;
 esac
 
+echo "Setting BetyDB cache folder"
+export BETYDB_LOCAL_CACHE_FOLDER=$PWD/tools/
+
 export RUN_ID=stereo_rgb-`date +'%s'`
 export RUN_DIR=$HOME/workflows/$RUN_ID
 
