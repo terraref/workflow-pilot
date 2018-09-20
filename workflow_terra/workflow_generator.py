@@ -92,6 +92,7 @@ def generate_tools_list():
     out = []
 
     # Set BETYDB_LOCAL_CACHE_FOLDER = /tools directory
+    print("Dumping BETY experiments file")
     dump_experiments()
 
     toollist = [
@@ -105,6 +106,7 @@ def generate_tools_list():
         "bety_experiments.json"
     ]
 
+    print("Including /tools directory files")
     for t in toollist:
         tool_daxf = File(t)
         tool_daxf.addPFN(my_pfn(top_dir+"/tools/"+t))
@@ -117,6 +119,7 @@ def generate_tools_list():
         os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/VNIR/sensor_fixed_metadata.json"),
         os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/scanalyzer/sensor_fixed_metadata.json")
     ]
+    print("Including sensor fixed metadata")
     for sensor_metadata in sensor_metadata_list:
         sensor_metadata_daxf = File(my_lfn(sensor_metadata))
         sensor_metadata_daxf.addPFN(my_pfn(sensor_metadata))
@@ -130,6 +133,8 @@ def process_raw_filelist():
     """
     scan_list = []
     curr_scan = ""
+
+    tools = generate_tools_list()
 
     dates = sorted(os.listdir(os.path.join(scan_root, "ua-mac/raw_data/stereoTop")))
     for date in dates:
@@ -160,7 +165,7 @@ def process_raw_filelist():
                 if scan and scan != curr_scan:
                     if len(scan_list) > 0:
                         print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
-                        create_scan_dax(date, curr_scan, scan_list)
+                        create_scan_dax(date, curr_scan, scan_list, tools)
                         # TODO: Temporary
                         return
 
@@ -169,7 +174,7 @@ def process_raw_filelist():
 
                 elif len(scan_list) > scan_size_limit and scan_size_limit > 0:
                     print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
-                    create_scan_dax(date, curr_scan, scan_list)
+                    create_scan_dax(date, curr_scan, scan_list, tools)
                     return
 
                 # TODO: What do we do if there is no scan in the metadata? "unknown_scan_{date}"?
@@ -177,7 +182,7 @@ def process_raw_filelist():
 
     if len(scan_list) > 0:
         print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
-        create_scan_dax(date, curr_scan, scan_list)
+        create_scan_dax(date, curr_scan, scan_list, tools)
 
 def get_scan_from_metadata(meta):
     """
@@ -217,14 +222,13 @@ def create_job(script, args, inputs, outputs, tools):
     #job.addProfile(Profile(Namespace.PEGASUS, 'clusters.size', '20'))
     return job
 
-def create_scan_dax(date, scan_name, scan_list):
+def create_scan_dax(date, scan_name, scan_list, tools):
     """
     register all jobs in stereoTop workflow and create dax file for single scan
     """
     dax = ADAG('stereo_rgb_'+scan_name)
 
     # Add tools to dax
-    tools = generate_tools_list()
     for tool in tools:
         dax.addFile(tool)
 

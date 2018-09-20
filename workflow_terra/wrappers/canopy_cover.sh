@@ -6,7 +6,7 @@ INPUT=`echo "$1" | sed 's;___;/;g'`
 SCAN=$2
 IMAGE=$3
 
-export BETYDB_LOCAL_CACHE_FOLDER=$PWD/../tools/
+export BETYDB_LOCAL_CACHE_FOLDER=$(dirname $PWD)/tools/
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 
 if [ -e "fullfield_${SCAN}.tar.gz" ]; then

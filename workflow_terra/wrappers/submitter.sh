@@ -6,7 +6,7 @@ JOBTYPE=$1
 JOBARG=$2
 INPUT=$3
 
-export BETYDB_LOCAL_CACHE_FOLDER=$PWD/../tools/
+export BETYDB_LOCAL_CACHE_FOLDER=$(dirname $PWD)/tools/
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 
 if [ $JOBTYPE == 'bety' ]; then

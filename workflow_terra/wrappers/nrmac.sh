@@ -9,7 +9,7 @@ OUT_LEFT=`echo "$4" | sed 's;___;/;g'`
 OUT_RIGHT=`echo "$5" | sed 's;___;/;g'`
 OUT_JSON=`echo "$6" | sed 's;___;/;g'`
 
-export BETYDB_LOCAL_CACHE_FOLDER=$PWD/../tools/
+export BETYDB_LOCAL_CACHE_FOLDER=$(dirname $PWD)/tools/
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 
 # touch the outputs so we don't get held jobs in case of failures

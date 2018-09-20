@@ -8,7 +8,7 @@ SINGLE=$3
 
 OUT_DIR=`dirname $JSON`
 
-export BETYDB_LOCAL_CACHE_FOLDER=$PWD/../tools/
+export BETYDB_LOCAL_CACHE_FOLDER=$(dirname $PWD)/tools/
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 
 if [ $SINGLE == 'true' ]; then
