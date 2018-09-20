@@ -92,7 +92,7 @@ def generate_tools_list():
     out = []
 
     # Set BETYDB_LOCAL_CACHE_FOLDER = /tools directory
-    print("Dumping BETY experiments file")
+    print("Dumping BETY experiments file into "+os.environ.get('BETYDB_LOCAL_CACHE_FOLDER', "/home/extractor/"))
     dump_experiments()
 
     toollist = [
