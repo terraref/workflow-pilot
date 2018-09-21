@@ -96,21 +96,21 @@ def generate_tools_list():
     dump_experiments()
 
     toollist = [
-        "bin2tif.py",
-        "nrmac.py",
-        "canopyCover.py",
-        "fieldmosaic.py",
-        "submit_clowder.py",
-        "submit_bety.py",
-        "submit_geo.py",
-        "bety_experiments.json"
+        os.path.join(top_dir,"tools", "bin2tif.py"),
+        os.path.join(top_dir,"tools", "nrmac.py"),
+        os.path.join(top_dir,"tools", "canopyCover.py"),
+        os.path.join(top_dir,"tools", "fieldmosaic.py"),
+        os.path.join(top_dir,"tools", "submit_clowder.py"),
+        os.path.join(top_dir,"tools", "submit_bety.py"),
+        os.path.join(top_dir,"tools", "submit_geo.py"),
+        os.path.join(top_dir,"tools", "bety_experiments.json")
     ]
 
     print("Including /tools directory files")
     for t in toollist:
         # TODO: why no lfn here?
         tool_daxf = File(my_lfn(t))
-        tool_daxf.addPFN(my_pfn(top_dir+"/tools/"+t))
+        tool_daxf.addPFN(my_pfn(t))
         # Use filename without extension as dict key in case we need it as input later
         out[t[:t.find(".")]] = tool_daxf
 
