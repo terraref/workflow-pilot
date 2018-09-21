@@ -89,7 +89,7 @@ def generate_tools_list():
     """
     return all python scripts in /tools directory
     """
-    out = []
+    out = {}
 
     # Set BETYDB_LOCAL_CACHE_FOLDER = /tools directory
     print("Dumping BETY experiments file into "+os.environ.get('BETYDB_LOCAL_CACHE_FOLDER', "/home/extractor/"))
@@ -108,9 +108,11 @@ def generate_tools_list():
 
     print("Including /tools directory files")
     for t in toollist:
+        # TODO: why no lfn here?
         tool_daxf = File(t)
         tool_daxf.addPFN(my_pfn(top_dir+"/tools/"+t))
-        out.append(tool_daxf)
+        # Use filename without extension as dict key in case we need it as input later
+        out[t[:t.find(".")]] = tool_daxf
 
     sensor_metadata_list = [
         os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/stereo/sensor_fixed_metadata.json"),
@@ -120,10 +122,11 @@ def generate_tools_list():
         os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/scanalyzer/sensor_fixed_metadata.json")
     ]
     print("Including sensor fixed metadata")
-    for sensor_metadata in sensor_metadata_list:
-        sensor_metadata_daxf = File(my_lfn(sensor_metadata))
-        sensor_metadata_daxf.addPFN(my_pfn(sensor_metadata))
-        out.append(sensor_metadata_daxf)
+    for s in sensor_metadata_list:
+        sensor_metadata_daxf = File(my_lfn(s))
+        sensor_metadata_daxf.addPFN(my_pfn(s))
+        # Use '$SENSOR_fixed' as dict key in case we need it as input later
+        out[s.split("/")[-2]+"_fixed"] = sensor_metadata_daxf
 
     return out
 
@@ -135,7 +138,7 @@ def process_raw_filelist():
     curr_scan = ""
 
     tools = generate_tools_list()
-    
+
     print("Beginning scan of %s" % os.path.join(scan_root, "ua-mac/raw_data/stereoTop"))
     dates = sorted(os.listdir(os.path.join(scan_root, "ua-mac/raw_data/stereoTop")))
     for date in dates:
@@ -236,7 +239,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
 
     # Add tools to dax
     for tool in tools:
-        dax.addFile(tool)
+        dax.addFile(tools[tool])
 
     # TODO: Checks for existing files that skip certain jobs if they don't need to be run?
 
@@ -285,8 +288,9 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         out_meta_daxf = File(my_lfn(out_meta))
 
         # JOB
-        args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts, sensor_metadata_daxf]
-        inputs = [in_left_daxf, in_right_daxf, in_meta_daxf, sensor_metadata_daxf]
+        args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts,
+                tools["stereo_fixed"], tools["bety_experiments"]]
+        inputs = [in_left_daxf, in_right_daxf, in_meta_daxf, tools["stereo_fixed"], tools["bety_experiments"]]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)
         dax.addJob(job)
@@ -442,8 +446,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     cc_geo_daxf = File(my_lfn(cc_geo))
 
     # JOB
-    args = [canopy_cover_input, scan_name, full_resolution_geotiff]
-    inputs = [canopy_cover_input_daxf]
+    args = [canopy_cover_input, scan_name, full_resolution_geotiff, tools["bety_experiments"]]
+    inputs = [canopy_cover_input_daxf, tools["bety_experiments"]]
     outputs = [cc_bety_daxf, cc_geo_daxf]
     job = create_job('canopy_cover.sh', args, inputs, outputs, tools)
     dax.addJob(job)
