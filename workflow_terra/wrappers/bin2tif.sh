@@ -12,6 +12,7 @@ OUT_META=`echo "$6" | sed 's;___;/;g'`
 TIMESTAMP=`echo "$7"`
 FIXED_META=`echo "$8" | sed 's;___;/;g'`
 BETY_DUMP=`echo "$9" | sed 's;___;/;g'`
+TOOL_SCRIPT=`echo "${10}" | sed 's;___;/;g'`
 
 IN_DIR=`dirname $IN_LEFT`
 OUT_DIR=`dirname $OUT_LEFT`
@@ -33,11 +34,12 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp $2 $IN_RIGHT
     cp $3 $IN_META
     cp $8 $FIXED_META
+    cp ${10} $TOOL_SCRIPT
 fi
 
 echo ls .
-chmod 755 /home/centos/workflow-pilot/workflow_terra/tools/bin2tif.py
-/home/centos/workflow-pilot/workflow_terra/tools/bin2tif.py -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
+chmod 755 $TOOL_SCRIPT
+$TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
 
 # condor pool?
 if [ "$1" != "$IN_LEFT" ]; then
