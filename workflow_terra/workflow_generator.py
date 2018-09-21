@@ -96,14 +96,14 @@ def generate_tools_list():
     dump_experiments()
 
     toollist = [
-        os.path.join(top_dir,"tools", "bin2tif.py"),
-        os.path.join(top_dir,"tools", "nrmac.py"),
-        os.path.join(top_dir,"tools", "canopyCover.py"),
-        os.path.join(top_dir,"tools", "fieldmosaic.py"),
-        os.path.join(top_dir,"tools", "submit_clowder.py"),
-        os.path.join(top_dir,"tools", "submit_bety.py"),
-        os.path.join(top_dir,"tools", "submit_geo.py"),
-        os.path.join(top_dir,"tools", "bety_experiments.json")
+        os.path.join(top_dir+"/tools", "bin2tif.py"),
+        os.path.join(top_dir+"/tools", "nrmac.py"),
+        os.path.join(top_dir+"/tools", "canopyCover.py"),
+        os.path.join(top_dir+"/tools", "fieldmosaic.py"),
+        os.path.join(top_dir+"/tools", "submit_clowder.py"),
+        os.path.join(top_dir+"/tools", "submit_bety.py"),
+        os.path.join(top_dir+"/tools", "submit_geo.py"),
+        os.path.join(top_dir+"/tools", "bety_experiments.json")
     ]
 
     print("Including /tools directory files")
