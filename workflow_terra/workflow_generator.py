@@ -111,8 +111,8 @@ def generate_tools_list():
         # TODO: why no lfn here?
         tool_daxf = File(my_lfn(t))
         tool_daxf.addPFN(my_pfn(t))
-        # Use filename without extension as dict key in case we need it as input later
-        out[t[:t.find(".")]] = tool_daxf
+        # Use filename as dict key in case we need it as input later
+        out[t.split("/")[-1]] = tool_daxf
 
     sensor_metadata_list = [
         os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/stereo/sensor_fixed_metadata.json"),
@@ -289,7 +289,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
 
         # JOB
         args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts,
-                tools["stereo_fixed"], tools["bety_experiments"]]
+                tools["stereo_fixed"], tools["bety_experiments.json"]]
         inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)
@@ -446,7 +446,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     cc_geo_daxf = File(my_lfn(cc_geo))
 
     # JOB
-    args = [canopy_cover_input, scan_name, full_resolution_geotiff, tools["bety_experiments"]]
+    args = [canopy_cover_input, scan_name, full_resolution_geotiff, tools["bety_experiments.json"]]
     inputs = [canopy_cover_input_daxf]
     outputs = [cc_bety_daxf, cc_geo_daxf]
     job = create_job('canopy_cover.sh', args, inputs, outputs, tools)
