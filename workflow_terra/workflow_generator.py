@@ -109,7 +109,7 @@ def generate_tools_list():
     print("Including /tools directory files")
     for t in toollist:
         # TODO: why no lfn here?
-        tool_daxf = File(t)
+        tool_daxf = File(my_lfn(t))
         tool_daxf.addPFN(my_pfn(top_dir+"/tools/"+t))
         # Use filename without extension as dict key in case we need it as input later
         out[t[:t.find(".")]] = tool_daxf

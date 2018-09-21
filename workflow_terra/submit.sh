@@ -46,7 +46,7 @@ envsubst < sites.template.xml > workflow/generated/sites.xml
 
 # generate a transformation catalog
 echo "Generating transformation catalog"
-./tc-generator.sh $EXEC_ENV >workflow/generated/tc.data
+./tc-generator.sh $EXEC_ENV > workflow/generated/tc.data
 
 # generate the workflow
 echo "Calling workflow_generator"
