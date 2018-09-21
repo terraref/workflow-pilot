@@ -290,7 +290,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         # JOB
         args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts,
                 tools["stereo_fixed"], tools["bety_experiments"]]
-        inputs = [in_left_daxf, in_right_daxf, in_meta_daxf, tools["stereo_fixed"], tools["bety_experiments"]]
+        inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)
         dax.addJob(job)
@@ -447,7 +447,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
 
     # JOB
     args = [canopy_cover_input, scan_name, full_resolution_geotiff, tools["bety_experiments"]]
-    inputs = [canopy_cover_input_daxf, tools["bety_experiments"]]
+    inputs = [canopy_cover_input_daxf]
     outputs = [cc_bety_daxf, cc_geo_daxf]
     job = create_job('canopy_cover.sh', args, inputs, outputs, tools)
     dax.addJob(job)
