@@ -216,7 +216,7 @@ def create_job(script, args, inputs, outputs, tools):
 
     # all jobs will have access to python scripts
     for tool in tools:
-        job.uses(tool, link=Link.INPUT)
+        job.uses(tools[tool], link=Link.INPUT)
 
     for input in inputs:
         job.uses(input, link=Link.INPUT)
