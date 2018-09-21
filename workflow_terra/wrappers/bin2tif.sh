@@ -20,7 +20,8 @@ META_DIR=`dirname $FIXED_META`
 mkdir -p $IN_DIR $OUT_DIR $META_DIR
 OUT_DIR="."
 
-export BETYDB_LOCAL_CACHE_FOLDER=$(dirname $PWD)/tools/
+echo "Setting BETY cache location to location of $BETY_DUMP"
+export BETYDB_LOCAL_CACHE_FOLDER=`dirname $BETY_DUMP`
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 
 # touch the outputs so we don't get held jobs in case of failures
