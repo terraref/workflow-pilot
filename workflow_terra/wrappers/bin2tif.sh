@@ -17,8 +17,9 @@ TOOL_SCRIPT=`echo "${10}" | sed 's;___;/;g'`
 IN_DIR=`dirname $IN_LEFT`
 OUT_DIR=`dirname $OUT_LEFT`
 META_DIR=`dirname $FIXED_META`
+TOOL_DIR=`dirname $TOOL_SCRIPT`
 
-mkdir -p $IN_DIR $OUT_DIR $META_DIR
+mkdir -p $IN_DIR $OUT_DIR $META_DIR $TOOL_DIR
 OUT_DIR="."
 
 echo "Setting BETY cache location to location of $BETY_DUMP"
