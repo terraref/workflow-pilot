@@ -35,9 +35,9 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp $8 $FIXED_META
 fi
 
-ls .
-chmod 755 ./tools/bin2tif.py
-./tools/bin2tif.py -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
+echo ls .
+chmod 755 /home/centos/workflow-pilot/workflow_terra/tools/bin2tif.py
+/home/centos/workflow-pilot/workflow_terra/tools/bin2tif.py -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
 
 # condor pool?
 if [ "$1" != "$IN_LEFT" ]; then
