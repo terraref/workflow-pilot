@@ -35,8 +35,8 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp $8 $FIXED_META
 fi
 
-chmod 755 bin2tif.py
-./bin2tif.py -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
+chmod 755 tools/bin2tif.py
+./tools/bin2tif.py -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
 
 # condor pool?
 if [ "$1" != "$IN_LEFT" ]; then
