@@ -108,7 +108,6 @@ def generate_tools_list():
 
     print("Including /tools directory files")
     for t in toollist:
-        # TODO: why no lfn here?
         tool_daxf = File(my_lfn(t))
         tool_daxf.addPFN(my_pfn(t))
         # Use filename as dict key in case we need it as input later
@@ -289,7 +288,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
 
         # JOB
         args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts,
-                tools["stereo_fixed"], tools["bety_experiments.json"]]
+                tools["stereo_fixed"], os.path.join(top_dir,"tools")]
         inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)
