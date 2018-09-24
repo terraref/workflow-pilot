@@ -2,7 +2,7 @@
 
 set -e
 
-IN_JSON=$1
+IN_JSON=`echo "$1" | sed 's;___;/;g'`
 SCAN=$2
 SINGLE=$3
 TOOL_SCRIPT=`echo "$4" | sed 's;___;/;g'`
