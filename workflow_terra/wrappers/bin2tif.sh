@@ -17,13 +17,14 @@ TOOL_SCRIPT=`echo "${10}" | sed 's;___;/;g'`
 IN_DIR=`dirname $IN_LEFT`
 OUT_DIR=`dirname $OUT_LEFT`
 META_DIR=`dirname $FIXED_META`
+BETY_DIR=`dirname $BETY_DUMP`
 TOOL_DIR=`dirname $TOOL_SCRIPT`
 
-mkdir -p $IN_DIR $OUT_DIR $META_DIR $TOOL_DIR
+mkdir -p $IN_DIR $OUT_DIR $META_DIR $BETY_DIR $TOOL_DIR
 OUT_DIR="."
 
-echo "Setting BETY cache location to location of $BETY_DUMP"
-export BETYDB_LOCAL_CACHE_FOLDER=`dirname $BETY_DUMP`
+echo "Setting BETY cache location to $BETY_DIR"
+export BETYDB_LOCAL_CACHE_FOLDER=$BETY_DIR
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 
 # touch the outputs so we don't get held jobs in case of failures
@@ -35,6 +36,7 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp $2 $IN_RIGHT
     cp $3 $IN_META
     cp $8 $FIXED_META
+    cp $9 $BETY_DUMP
     cp ${10} $TOOL_SCRIPT
 fi
 
