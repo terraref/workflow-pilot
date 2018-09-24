@@ -372,7 +372,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         field_paths_qual = os.path.join(top_dir, 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name))
         field_paths_qual_daxf = create_daxf(field_paths_qual, True, dax)
     else:
-        field_paths_qual = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
+        field_paths_qual = os.path.join(fullfield_out_dir, 'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name))
         field_paths_qual_daxf = create_daxf(field_paths_qual, True, dax)
     if not os.path.isdir(os.path.dirname(field_paths_qual)):
         os.makedirs(os.path.dirname(field_paths_qual))
@@ -383,11 +383,10 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
     if execution_env == 'condor_pool':
-        rgb_geotiff_tar = merge_rgb_geotiffs(dax, "rgb_geotiff_quality_" + scan_name + ".tar.gz",
-                                             fieldmosaic_quality_inputs, 0)
+        rgb_geotiff_tar = merge_rgb_geotiffs(dax, "rgb_geotiff_quality_" + scan_name + ".tar.gz", fieldmosaic_quality_inputs, 0)
         fieldmosaic_quality_inputs = [rgb_geotiff_tar]
     else:
-        fieldmosaic_quality_inputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_inputs))
+        fieldmosaic_quality_inputs = list(map(lambda x: create_daxf(x), fieldmosaic_quality_inputs))
     # the quality stitched output is small, so don't tar this up even for condorio
     fieldmosaic_quality_outputs = [
         field_paths_qual.replace("_file_paths.json", ".vrt"),
@@ -396,7 +395,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     # JOB
     args = [field_paths_qual_daxf, scan_name, 'true']
     inputs = fieldmosaic_quality_inputs + [field_paths_qual_daxf]
-    outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs))
+    outputs = list(map(lambda x: create_daxf(x), fieldmosaic_quality_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
@@ -406,45 +405,42 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     # INPUT
     if dry_run:
-        file_paths = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
-        fieldmosaic_json = File(my_lfn(file_paths))
-        fieldmosaic_json.addPFN(my_pfn(top_dir+"/"+file_paths))
-        dax.addFile(fieldmosaic_json)
+        field_paths_norm = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
+        field_paths_norm_daxf = create_daxf(field_paths_norm, True, dax)
     else:
-        file_paths = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, scan_name)
-        fieldmosaic_json = File(my_lfn(file_paths))
-        dax.addFile(fieldmosaic_json)
-    if not os.path.isdir(os.path.dirname(file_paths)):
-        os.makedirs(os.path.dirname(file_paths))
+        field_paths_norm = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, scan_name)
+        field_paths_norm_daxf = create_daxf(field_paths_norm, True, dax)
+    if not os.path.isdir(os.path.dirname(field_paths_norm)):
+        os.makedirs(os.path.dirname(field_paths_norm))
     with open(file_paths, 'w') as j:
         for path in fieldmosaic_inputs:
             j.write("%s\n" % path)
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
-    full_resolution_geotiff = file_paths.replace("_file_paths.json", ".tif")
+    full_resolution_geotiff = field_paths_norm.replace("_file_paths.json", ".tif")
+    full_resolution_geotiff_daxf = create_daxf(full_resolution_geotiff)
     if execution_env == 'condor_pool':
-        rgb_geotiff_tar = merge_rgb_geotiffs(dax, "rgb_geotiff_" + scan_name + ".tar.gz",
-                                             fieldmosaic_inputs, 0)
+        rgb_geotiff_tar = merge_rgb_geotiffs(dax, "rgb_geotiff_" + scan_name + ".tar.gz", fieldmosaic_inputs, 0)
         fieldmosaic_inputs = [rgb_geotiff_tar]
         fieldmosaic_outputs = ['fullfield_'+scan_name+'.tar.gz']
         canopy_cover_input = 'fullfield_'+scan_name+'.tar.gz'
-        canopy_cover_input_daxf = File(my_lfn(canopy_cover_input))
+        canopy_cover_input_daxf = create_daxf(canopy_cover_input)
     else:
-        fieldmosaic_inputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_inputs))
+        fieldmosaic_inputs = list(map(lambda x: create_daxf(x), fieldmosaic_inputs))
         fieldmosaic_outputs = [
-            file_paths.replace("_file_paths.json", ".vrt"),
+            field_paths_norm.replace("_file_paths.json", ".vrt"),
             full_resolution_geotiff,
-            file_paths.replace("_file_paths.json", "_thumb.tif"),
-            file_paths.replace("_file_paths.json", "_10pct.tif"),
-            file_paths.replace("_file_paths.json", ".png")]
-        canopy_cover_input = file_paths.replace("_file_paths.json", ".tif")
-        canopy_cover_input_daxf = File(my_lfn(canopy_cover_input))
+            field_paths_norm.replace("_file_paths.json", "_thumb.tif"),
+            field_paths_norm.replace("_file_paths.json", "_10pct.tif"),
+            field_paths_norm.replace("_file_paths.json", ".png")]
+        canopy_cover_input = field_paths_norm.replace("_file_paths.json", ".tif")
+        canopy_cover_input_daxf = create_daxf(canopy_cover_input)
 
     # JOB
-    args = [file_paths, scan_name, 'false']
-    inputs = fieldmosaic_inputs + [fieldmosaic_json]
-    outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_outputs))
+    args = [field_paths_norm_daxf, scan_name, 'false']
+    inputs = fieldmosaic_inputs + [field_paths_norm_daxf]
+    outputs = list(map(lambda x: create_daxf(x), fieldmosaic_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
@@ -453,13 +449,13 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     ----- canopyCover (generate plot-level canopy cover trait CSVs) -----
     """
     # OUTPUT
-    cc_bety = file_paths.replace("_file_paths.json", "_canopycover_bety.csv")
-    cc_geo = file_paths.replace("_file_paths.json", "_canopycover_geo.csv")
-    cc_bety_daxf = File(my_lfn(cc_bety))
-    cc_geo_daxf = File(my_lfn(cc_geo))
+    cc_bety = field_paths_norm.replace("_file_paths.json", "_canopycover_bety.csv")
+    cc_geo = field_paths_norm.replace("_file_paths.json", "_canopycover_geo.csv")
+    cc_bety_daxf = create_daxf(cc_bety)
+    cc_geo_daxf = create_daxf(cc_geo)
 
     # JOB
-    args = [canopy_cover_input, scan_name, full_resolution_geotiff, tools["bety_experiments.json"]]
+    args = [canopy_cover_input_daxf, scan_name, full_resolution_geotiff_daxf, tools["bety_experiments.json"]]
     inputs = [canopy_cover_input_daxf]
     outputs = [cc_bety_daxf, cc_geo_daxf]
     job = create_job('canopy_cover.sh', args, inputs, outputs, tools)
@@ -470,16 +466,15 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     ----- Clowder submission (upload bin2tif files to Clowder) -----
     """
     if dry_run:
-        clowder_ids = 'workflow/json/ff_'+scan_name+'_clowder_ids.json'
-        out_cid_daxf = File(my_lfn(clowder_ids))
-        out_cid_daxf.addPFN(my_pfn(top_dir+"/"+clowder_ids))
+        clowder_ids = os.path.join(top_dir, 'workflow/json/ff_'+scan_name+'_clowder_ids.json')
+        out_cid_daxf = create_daxf(clowder_ids, True, dax)
     else:
-        clowder_ids = fullfield_out_dir+scan_name+'_clowder_ids.json'
-        out_cid_daxf = File(my_lfn(clowder_ids))
+        clowder_ids = os.path.join(fullfield_out_dir, scan_name+'_clowder_ids.json')
+        out_cid_daxf = create_daxf(clowder_ids, True, dax)
     args = ['fullfield', scan_name, fullfield_out_dir]
-    inputs = ([field_paths_qual_daxf, fieldmosaic_json] +
-              list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs)) +
-              list(map(lambda x: File(my_lfn(x)), fieldmosaic_inputs)))
+    inputs = ([field_paths_qual_daxf, field_paths_norm_daxf] +
+              list(map(lambda x: create_daxf(x), fieldmosaic_quality_outputs)) +
+              list(map(lambda x: create_daxf(x), fieldmosaic_inputs)))
     outputs = [out_cid_daxf]
     job = create_job('submitter.sh', args, inputs, outputs, tools)
     # TODO: Enable this last
@@ -490,13 +485,12 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     ----- BETY submission (upload trait CSVs) -----
     """
     if dry_run:
-        bety_ids = 'workflow/json/'+scan_name+'_bety_ids.json'
-        out_bety_daxf = File(my_lfn(bety_ids))
-        out_bety_daxf.addPFN(my_pfn(top_dir+"/"+bety_ids))
+        bety_ids = os.path.join(top_dir, 'workflow/json/'+scan_name+'_bety_ids.json')
+        out_bety_daxf = create_daxf(bety_ids, True, dax)
     else:
-        bety_ids = fullfield_out_dir+scan_name+'_bety_ids.json'
-        out_bety_daxf = File(my_lfn(bety_ids))
-    args = ['bety', 'canopy_cover', cc_bety]
+        bety_ids = os.path.join(fullfield_out_dir, scan_name+'_bety_ids.json')
+        out_bety_daxf = create_daxf(bety_ids, True, dax)
+    args = ['bety', 'canopy_cover', cc_bety_daxf]
     inputs = [cc_bety_daxf]
     outputs = [out_bety_daxf]
     job = create_job('submitter.sh', args, inputs, outputs, tools)
@@ -508,13 +502,12 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     ----- Geostreams submission (upload geo CSVs - requires fullfield Clowder ID) -----
     """
     if dry_run:
-        geo_ids = 'workflow/json/'+scan_name+'_geo_ids.json'
-        out_geo_daxf = File(my_lfn(geo_ids))
-        out_geo_daxf.addPFN(my_pfn(top_dir+"/"+geo_ids))
+        geo_ids = os.path.join(top_dir, 'workflow/json/'+scan_name+'_geo_ids.json')
+        out_geo_daxf = create_daxf(geo_ids, True, dax)
     else:
-        geo_ids = fullfield_out_dir+scan_name+'_geo_ids.json'
-        out_geo_daxf = File(my_lfn(geo_ids))
-    args = ['geo', 'canopy_cover', cc_geo]
+        geo_ids = os.path.join(fullfield_out_dir, scan_name+'_geo_ids.json')
+        out_geo_daxf = create_daxf(geo_ids, True, dax)
+    args = ['geo', 'canopy_cover', cc_geo_daxf]
     inputs = [out_cid_daxf, cc_geo_daxf]
     outputs = [out_geo_daxf]
     job = create_job('submitter.sh', args, inputs, outputs, tools)
