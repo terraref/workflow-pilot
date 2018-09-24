@@ -24,6 +24,7 @@ if [ $SINGLE == 'true' ]; then
         tar xzf rgb_geotiff_quality_${SCAN}.tar.gz
     fi
 
+    chmod 755 $TOOL_SCRIPT
     $TOOL_SCRIPT -j $IN_JSON --single
 
 else
@@ -31,6 +32,7 @@ else
         tar xzf rgb_geotiff_${SCAN}.tar.gz
     fi
 
+    chmod 755 $TOOL_SCRIPT
     $TOOL_SCRIPT -j $IN_JSON
 
     if [ -e "rgb_geotiff_${SCAN}.tar.gz" ]; then

@@ -9,17 +9,18 @@ from Pegasus.DAX3 import *
 from terrautils.betydb import dump_experiments
 
 
-top_dir = os.getcwd()
-scan_root = "/data/terraref/sites/"
+dry_run = True
 limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
 scan_size_limit = 1
 execution_env = 'condor_pool'
-dry_run = True
 
-if not dry_run:
-    root_dir = "/data/terraref/sites/"
+
+top_dir = os.getcwd()
+scan_root = "/data/terraref/sites/"
+if dry_run:
+    root_dir = os.path.join(top_dir, "workflow/sites/")
 else:
-    root_dir = top_dir+"/workflow/sites/"
+    root_dir = "/data/terraref/sites/"
 
 
 # TODO: Checks for existing files that skip certain jobs if they don't need to be run?
@@ -330,23 +331,11 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         fieldmosaic_quality_inputs.append(out_qual_left)
 
 
-        # TODO: TEMPORARY -------------------------------------------------
-        # write out the dax
-        dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
-        if not os.path.isdir(os.path.dirname(dax_file)):
-            os.makedirs(os.path.dirname(dax_file))
-        f = open(dax_file, 'w')
-        dax.writeXML(f)
-        f.close()
-        return
-        # TODO: TEMPORARY -------------------------------------------------
-
-
         """
         ----- Clowder submission (upload bin2tif files to Clowder) -----
         """
         if dry_run:
-            clowder_ids = os.path.join(top_dir, '/workflow/json/rgb_'+scan_name+'_clowder_ids.json')
+            clowder_ids = os.path.join(top_dir, 'workflow/json/rgb_'+scan_name+'_clowder_ids.json')
             out_cid_daxf = create_daxf(clowder_ids, True, dax)
         else:
             clowder_ids = os.path.join(rgb_geotiff_out_dir, scan_name+'_clowder_ids.json')
@@ -393,11 +382,23 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         field_paths_qual.replace("_file_paths.json", ".tif")]
 
     # JOB
-    args = [field_paths_qual_daxf, scan_name, 'true']
+    args = [field_paths_qual_daxf, scan_name, 'true', tools["fieldmosaic.py"]]
     inputs = fieldmosaic_quality_inputs + [field_paths_qual_daxf]
     outputs = list(map(lambda x: create_daxf(x), fieldmosaic_quality_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
+
+
+    # TODO: TEMPORARY -------------------------------------------------
+    # write out the dax
+    dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
+    if not os.path.isdir(os.path.dirname(dax_file)):
+        os.makedirs(os.path.dirname(dax_file))
+    f = open(dax_file, 'w')
+    dax.writeXML(f)
+    f.close()
+    return
+    # TODO: TEMPORARY -------------------------------------------------
 
 
     """
