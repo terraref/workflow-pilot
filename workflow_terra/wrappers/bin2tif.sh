@@ -19,11 +19,8 @@ OUT_DIR=`dirname $OUT_LEFT`
 META_DIR=`dirname $FIXED_META`
 BETY_DIR=`dirname $BETY_DUMP`
 TOOL_DIR=`dirname $TOOL_SCRIPT`
-
 mkdir -p $IN_DIR $OUT_DIR $META_DIR $BETY_DIR $TOOL_DIR
-OUT_DIR="."
 
-echo "Setting BETY cache location to $BETY_DIR"
 export BETYDB_LOCAL_CACHE_FOLDER=$BETY_DIR
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 
@@ -40,7 +37,6 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp ${10} $TOOL_SCRIPT
 fi
 
-echo ls .
 chmod 755 $TOOL_SCRIPT
 $TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
 

@@ -22,6 +22,11 @@ else:
     root_dir = top_dir+"/workflow/sites/"
 
 
+# TODO: Checks for existing files that skip certain jobs if they don't need to be run?
+# TODO: Implement plot clipping outputs alongside the existing pipeline
+
+
+
 def add_merge_job(dax, final_name, chunk, level, job_number, final):
     """
     adds a merge job
@@ -240,10 +245,6 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     for tool in tools:
         dax.addFile(tools[tool])
 
-    # TODO: Checks for existing files that skip certain jobs if they don't need to be run?
-
-    # TODO: Implement plot clipping outputs alongside the existing pipeline
-
     fieldmosaic_inputs = []
     fieldmosaic_quality_inputs = []
 
@@ -260,6 +261,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         rgb_geotiff_out_dir = 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts)
         if not os.path.exists(rgb_geotiff_out_dir):
             os.makedirs(rgb_geotiff_out_dir)
+
 
         """
         ----- bin2tif (convert raw BIN files to geoTIFFs) -----
@@ -295,17 +297,6 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         dax.addJob(job)
 
 
-        # TODO: TEMPORARY
-        # write out the dax
-        dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
-        if not os.path.isdir(os.path.dirname(dax_file)):
-            os.makedirs(os.path.dirname(dax_file))
-        f = open(dax_file, 'w')
-        dax.writeXML(f)
-        f.close()
-        return
-
-
         """
         ----- nrmac (determine quality score of input geoTIFF and create low-res output geoTIFF) -----
         """
@@ -318,7 +309,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         out_nrmac_daxf = File(my_lfn(out_nrmac))
 
         # JOB
-        args = [out_left, out_right, out_qual_left, out_nrmac]
+        args = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf,
+                out_nrmac_daxf, tools["nrmac.py"]]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         outputs = [out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         job = create_job('nrmac.sh', args, inputs, outputs, tools)
@@ -327,6 +319,19 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         # needed for upcoming stitching
         fieldmosaic_inputs.append(out_left)
         fieldmosaic_quality_inputs.append(out_qual_left)
+
+
+        # TODO: TEMPORARY -------------------------------------------------
+        # write out the dax
+        dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
+        if not os.path.isdir(os.path.dirname(dax_file)):
+            os.makedirs(os.path.dirname(dax_file))
+        f = open(dax_file, 'w')
+        dax.writeXML(f)
+        f.close()
+        return
+        # TODO: TEMPORARY -------------------------------------------------
+
 
         """
         ----- Clowder submission (upload bin2tif files to Clowder) -----
@@ -348,6 +353,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % fieldmosaic_day
     if not os.path.exists(fullfield_out_dir):
         os.makedirs(fullfield_out_dir)
+
 
     """
     ----- fieldmosaic QAQC (create fullfield stitch of the nrmac quality geoTIFFs) -----
@@ -387,6 +393,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
+
 
     """
     ----- fieldmosaic (create fullfield stitch of the actual geoTIFFs) -----
@@ -435,6 +442,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
+
     """
     ----- canopyCover (generate plot-level canopy cover trait CSVs) -----
     """
@@ -450,6 +458,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     outputs = [cc_bety_daxf, cc_geo_daxf]
     job = create_job('canopy_cover.sh', args, inputs, outputs, tools)
     dax.addJob(job)
+
 
     """
     ----- Clowder submission (upload bin2tif files to Clowder) -----
@@ -469,6 +478,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     job = create_job('submitter.sh', args, inputs, outputs, tools)
     dax.addJob(job)
 
+
     """
     ----- BETY submission (upload trait CSVs) -----
     """
@@ -484,6 +494,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     outputs = [out_bety_daxf]
     job = create_job('submitter.sh', args, inputs, outputs, tools)
     dax.addJob(job)
+
 
     """
     ----- Geostreams submission (upload geo CSVs - requires fullfield Clowder ID) -----
