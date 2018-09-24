@@ -26,7 +26,6 @@ else:
 # TODO: Implement plot clipping outputs alongside the existing pipeline
 
 
-
 def add_merge_job(dax, final_name, chunk, level, job_number, final):
     """
     adds a merge job
@@ -73,6 +72,7 @@ def my_lfn(orig_lfn):
     Depending on the execution environment, we might have to "flatten" the
     lfn so that it does not have any sub directories.
     '''
+
     lfn = orig_lfn
     if execution_env == 'condor_pool':
         lfn = re.sub(r'/', '___', orig_lfn)
@@ -84,11 +84,26 @@ def my_pfn(orig_path):
     '''
     Depending on the execution environment, use either file:// or go:// PFNs
     '''
+
     if execution_env != 'condor_pool' and \
             re.search(r'sites/ua-mac/raw_data/stereoTop', orig_path):
         path = re.sub(r'.*ua-mac/', 'go://terraref#403204c4-6004-11e6-8316-22000b97daec/ua-mac/', orig_path)
         return PFN(path, site='globusonline')
     return PFN('file://' + orig_path, site='local')
+
+def create_daxf(file_path, include_pfn=False, dax=None):
+    """Return File entry for dax catalog based on file path.
+
+        include_pfn = whether to add physical filename to dax, e.g. for inputs.
+        dax = if provided, file will be added to dax, e.g. for inputs.
+    """
+
+    daxf = File(my_lfn(file_path))
+    if include_pfn:
+        daxf.addPFN(my_pfn(file_path))
+    if dax:
+        dax.addFile(daxf)
+    return daxf
 
 def generate_tools_list():
     """
@@ -113,8 +128,7 @@ def generate_tools_list():
 
     print("Including /tools directory files")
     for t in toollist:
-        tool_daxf = File(my_lfn(t))
-        tool_daxf.addPFN(my_pfn(t))
+        tool_daxf = create_daxf(t, True)
         # Use filename as dict key in case we need it as input later
         out[t.split("/")[-1]] = tool_daxf
 
@@ -127,17 +141,56 @@ def generate_tools_list():
     ]
     print("Including sensor fixed metadata")
     for s in sensor_metadata_list:
-        sensor_metadata_daxf = File(my_lfn(s))
-        sensor_metadata_daxf.addPFN(my_pfn(s))
+        sensor_metadata_daxf = create_daxf(s, True)
         # Use '$SENSOR_fixed' as dict key in case we need it as input later
         out[s.split("/")[-2]+"_fixed"] = sensor_metadata_daxf
 
     return out
 
+def get_scan_from_metadata(meta):
+    """
+    extract scan name & hash from metadata.json file
+    """
+    with open(meta, 'r') as f:
+        md = json.load(f)
+
+    scan_name = None
+
+    if 'lemnatec_measurement_metadata' in md:
+        if 'gantry_system_variable_metadata' in md['lemnatec_measurement_metadata']:
+            if 'Script copy path on FTP server' in md['lemnatec_measurement_metadata']['gantry_system_variable_metadata']:
+                ftp = md['lemnatec_measurement_metadata']['gantry_system_variable_metadata']['Script copy path on FTP server']
+                scan_name = os.path.basename(ftp).replace(".cs", "").lower()
+
+    return scan_name
+
+def create_job(script, args, inputs, outputs, tools):
+    """
+    shorthand for defining a Job as part of a workflow
+    """
+    job = Job(script)
+    for arg in args:
+        job.addArguments(arg)
+
+    # all jobs will have access to python scripts
+    for tool in tools:
+        job.uses(tools[tool], link=Link.INPUT)
+
+    for input in inputs:
+        job.uses(input, link=Link.INPUT)
+
+    for output in outputs:
+        job.uses(output, link=Link.OUTPUT, transfer=True)
+
+    #job.addProfile(Profile(Namespace.PEGASUS, 'clusters.size', '20'))
+    return job
+
+
 def process_raw_filelist():
     """
     scan raw stereoTop directory and create workflow dax files by scan name
     """
+
     scan_list = []
     curr_scan = ""
 
@@ -193,44 +246,6 @@ def process_raw_filelist():
         print("%s - [%s] %s datasets" % (date, curr_scan, len(scan_list)))
         create_scan_dax(date, curr_scan, scan_list, tools)
 
-def get_scan_from_metadata(meta):
-    """
-    extract scan name & hash from metadata.json file
-    """
-    with open(meta, 'r') as f:
-        md = json.load(f)
-
-    scan_name = None
-
-    if 'lemnatec_measurement_metadata' in md:
-        if 'gantry_system_variable_metadata' in md['lemnatec_measurement_metadata']:
-            if 'Script copy path on FTP server' in md['lemnatec_measurement_metadata']['gantry_system_variable_metadata']:
-                ftp = md['lemnatec_measurement_metadata']['gantry_system_variable_metadata']['Script copy path on FTP server']
-                scan_name = os.path.basename(ftp).replace(".cs", "").lower()
-
-    return scan_name
-
-def create_job(script, args, inputs, outputs, tools):
-    """
-    shorthand for defining a Job as part of a workflow
-    """
-    job = Job(script)
-    for arg in args:
-        job.addArguments(arg)
-
-    # all jobs will have access to python scripts
-    for tool in tools:
-        job.uses(tools[tool], link=Link.INPUT)
-
-    for input in inputs:
-        job.uses(input, link=Link.INPUT)
-
-    for output in outputs:
-        job.uses(output, link=Link.OUTPUT, transfer=True)
-
-    #job.addProfile(Profile(Namespace.PEGASUS, 'clusters.size', '20'))
-    return job
-
 def create_scan_dax(date, scan_name, scan_list, tools):
     """
     register all jobs in stereoTop workflow and create dax file for single scan
@@ -270,23 +285,17 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         in_left = fileset["left"]
         in_right = fileset["right"]
         in_meta = fileset["metadata"]
-        in_left_daxf = File(my_lfn(in_left))
-        in_left_daxf.addPFN(my_pfn(in_left))
-        dax.addFile(in_left_daxf)
-        in_right_daxf = File(my_lfn(in_right))
-        in_right_daxf.addPFN(my_pfn(in_right))
-        dax.addFile(in_right_daxf)
-        in_meta_daxf = File(my_lfn(in_meta))
-        in_meta_daxf.addPFN(my_pfn(in_meta))
-        dax.addFile(in_meta_daxf)
+        in_left_daxf = create_daxf(in_left, True, dax)
+        in_right_daxf = create_daxf(in_right, True, dax)
+        in_meta_daxf = create_daxf(in_meta, True, dax)
 
         # OUTPUT
         out_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts
         out_right = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_right.tif' % ts
         out_meta = rgb_geotiff_out_dir+'clean_metadata.json'
-        out_left_daxf = File(my_lfn(out_left))
-        out_right_daxf = File(my_lfn(out_right))
-        out_meta_daxf = File(my_lfn(out_meta))
+        out_left_daxf = create_daxf(out_left)
+        out_right_daxf = create_daxf(out_right)
+        out_meta_daxf = create_daxf(out_meta)
 
         # JOB
         args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts,
@@ -304,9 +313,9 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         out_qual_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts
         out_qual_right = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_right.tif' % ts
         out_nrmac = rgb_geotiff_out_dir+'nrmac_scores.json'
-        out_qual_left_daxf = File(my_lfn(out_qual_left))
-        out_qual_right_daxf = File(my_lfn(out_qual_right))
-        out_nrmac_daxf = File(my_lfn(out_nrmac))
+        out_qual_left_daxf = create_daxf(out_qual_left)
+        out_qual_right_daxf = create_daxf(out_qual_right)
+        out_nrmac_daxf = create_daxf(out_nrmac)
 
         # JOB
         args = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf,
@@ -347,7 +356,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         outputs = [out_cid_daxf]
         job = create_job('submitter.sh', args, inputs, outputs, tools)
-        dax.addJob(job)
+        # TODO: Enable this last
+        # dax.addJob(job)
 
     # fullfield mosaics and canopy cover CSVs end up here
     fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % fieldmosaic_day
@@ -360,17 +370,17 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     # INPUT
     if dry_run:
-        file_paths_q = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
-        fieldmosaic_quality_json = File(my_lfn(file_paths_q))
-        fieldmosaic_quality_json.addPFN(my_pfn(top_dir+"/"+file_paths_q))
-        dax.addFile(fieldmosaic_quality_json)
+        field_paths_qual = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
+        field_paths_qual_daxf = File(my_lfn(field_paths_qual))
+        field_paths_qual_daxf.addPFN(my_pfn(top_dir+"/"+field_paths_qual))
+        dax.addFile(field_paths_qual_daxf)
     else:
-        file_paths_q = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
-        fieldmosaic_quality_json = File(my_lfn(file_paths_q))
-        dax.addFile(fieldmosaic_quality_json)
-    if not os.path.isdir(os.path.dirname(file_paths_q)):
-        os.makedirs(os.path.dirname(file_paths_q))
-    with open(file_paths_q, 'w') as j:
+        field_paths_qual = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
+        field_paths_qual_daxf = File(my_lfn(field_paths_qual))
+        dax.addFile(field_paths_qual_daxf)
+    if not os.path.isdir(os.path.dirname(field_paths_qual)):
+        os.makedirs(os.path.dirname(field_paths_qual))
+    with open(field_paths_qual, 'w') as j:
         for path in fieldmosaic_quality_inputs:
             j.write("%s\n" % path)
 
@@ -384,12 +394,12 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         fieldmosaic_quality_inputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_inputs))
     # the quality stitched output is small, so don't tar this up even for condorio
     fieldmosaic_quality_outputs = [
-        file_paths_q.replace("_file_paths.json", ".vrt"),
-        file_paths_q.replace("_file_paths.json", ".tif")]
+        field_paths_qual.replace("_file_paths.json", ".vrt"),
+        field_paths_qual.replace("_file_paths.json", ".tif")]
 
     # JOB
-    args = [file_paths_q, scan_name, 'true']
-    inputs = fieldmosaic_quality_inputs + [fieldmosaic_quality_json]
+    args = [field_paths_qual_daxf, scan_name, 'true']
+    inputs = fieldmosaic_quality_inputs + [field_paths_qual_daxf]
     outputs = list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
@@ -471,12 +481,13 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         clowder_ids = fullfield_out_dir+scan_name+'_clowder_ids.json'
         out_cid_daxf = File(my_lfn(clowder_ids))
     args = ['fullfield', scan_name, fullfield_out_dir]
-    inputs = ([fieldmosaic_quality_json, fieldmosaic_json] +
+    inputs = ([field_paths_qual_daxf, fieldmosaic_json] +
               list(map(lambda x: File(my_lfn(x)), fieldmosaic_quality_outputs)) +
               list(map(lambda x: File(my_lfn(x)), fieldmosaic_inputs)))
     outputs = [out_cid_daxf]
     job = create_job('submitter.sh', args, inputs, outputs, tools)
-    dax.addJob(job)
+    # TODO: Enable this last
+    # dax.addJob(job)
 
 
     """
@@ -493,7 +504,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     inputs = [cc_bety_daxf]
     outputs = [out_bety_daxf]
     job = create_job('submitter.sh', args, inputs, outputs, tools)
-    dax.addJob(job)
+    # TODO: Enable this last
+    # dax.addJob(job)
 
 
     """
@@ -510,7 +522,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     inputs = [out_cid_daxf, cc_geo_daxf]
     outputs = [out_geo_daxf]
     job = create_job('submitter.sh', args, inputs, outputs, tools)
-    dax.addJob(job)
+    # TODO: Enable this last
+    # dax.addJob(job)
 
     # write out the dax
     dax_file = 'workflow/generated/%s__%s.xml' % (date, scan_name)

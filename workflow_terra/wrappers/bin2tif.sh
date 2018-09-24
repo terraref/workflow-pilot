@@ -21,6 +21,9 @@ BETY_DIR=`dirname $BETY_DUMP`
 TOOL_DIR=`dirname $TOOL_SCRIPT`
 mkdir -p $IN_DIR $OUT_DIR $META_DIR $BETY_DIR $TOOL_DIR
 
+# TODO: Deal with this...
+OUT_DIR="."
+
 export BETYDB_LOCAL_CACHE_FOLDER=$BETY_DIR
 export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
 
