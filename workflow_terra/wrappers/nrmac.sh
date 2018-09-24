@@ -30,7 +30,7 @@ if [ "$1" != "$IN_LEFT" ]; then
 fi
 
 chmod 755 $TOOL_SCRIPT
-$TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META -out_l $OUT_LEFT -out_r $OUT_RIGHT -out_j $OUT_JSON
+$TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META --out_l $OUT_LEFT --out_r $OUT_RIGHT --out_j $OUT_JSON
 
 # condor pool?
 if [ "$1" != "$IN_LEFT" ]; then

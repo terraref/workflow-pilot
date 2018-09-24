@@ -346,12 +346,11 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         ----- Clowder submission (upload bin2tif files to Clowder) -----
         """
         if dry_run:
-            clowder_ids = 'workflow/json/rgb_'+scan_name+'_clowder_ids.json'
-            out_cid_daxf = File(my_lfn(clowder_ids))
-            out_cid_daxf.addPFN(my_pfn(top_dir+"/"+clowder_ids))
+            clowder_ids = os.path.join(top_dir, '/workflow/json/rgb_'+scan_name+'_clowder_ids.json')
+            out_cid_daxf = create_daxf(clowder_ids, True, dax)
         else:
-            clowder_ids = rgb_geotiff_out_dir+scan_name+'_clowder_ids.json'
-            out_cid_daxf = File(my_lfn(clowder_ids))
+            clowder_ids = os.path.join(rgb_geotiff_out_dir, scan_name+'_clowder_ids.json')
+            out_cid_daxf = create_daxf(clowder_ids, True, dax)
         args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         outputs = [out_cid_daxf]
@@ -370,14 +369,11 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     # INPUT
     if dry_run:
-        field_paths_qual = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
-        field_paths_qual_daxf = File(my_lfn(field_paths_qual))
-        field_paths_qual_daxf.addPFN(my_pfn(top_dir+"/"+field_paths_qual))
-        dax.addFile(field_paths_qual_daxf)
+        field_paths_qual = os.path.join(top_dir, 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name))
+        field_paths_qual_daxf = create_daxf(field_paths_qual, True, dax)
     else:
         field_paths_qual = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
-        field_paths_qual_daxf = File(my_lfn(field_paths_qual))
-        dax.addFile(field_paths_qual_daxf)
+        field_paths_qual_daxf = create_daxf(field_paths_qual, True, dax)
     if not os.path.isdir(os.path.dirname(field_paths_qual)):
         os.makedirs(os.path.dirname(field_paths_qual))
     with open(field_paths_qual, 'w') as j:

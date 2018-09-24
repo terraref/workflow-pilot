@@ -22,6 +22,7 @@ TOOL_DIR=`dirname $TOOL_SCRIPT`
 mkdir -p $IN_DIR $OUT_DIR $META_DIR $BETY_DIR $TOOL_DIR
 
 # TODO: Deal with this...
+# TODO: cp: cannot stat 'ua-mac/Level_1/rgb_geotiff/2018-07-01/2018-07-01__08-35-45-218/rgb_geotiff_L1_ua-mac_2018-07-01__08-35-45-218_left.tif': No such file or directory
 OUT_DIR="."
 
 export BETYDB_LOCAL_CACHE_FOLDER=$BETY_DIR
