@@ -24,6 +24,10 @@ if [ $SINGLE == 'true' ]; then
         tar xzf rgb_geotiff_quality_${SCAN}.tar.gz
     fi
 
+    echo "Here we go with a VRT test..."
+    VRTFILE=`echo "$IN_JSON" | sed -e 's/_file_paths.json/.vrt/g'`
+    gdalbuildvrt -srcnodata "-99 -99 -99" -overwrite -input_file_list $IN_JSON $VRTFILE
+
     chmod 755 $TOOL_SCRIPT
     $TOOL_SCRIPT -j $IN_JSON --single
 
