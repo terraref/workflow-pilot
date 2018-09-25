@@ -366,7 +366,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         os.makedirs(os.path.dirname(field_paths_qual))
     with open(field_paths_qual, 'w') as j:
         for path in fieldmosaic_quality_inputs:
-            j.write("%s\n" % os.path.basename(path))
+            j.write("%s\n" % re.sub(r'/', '___', path))
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
