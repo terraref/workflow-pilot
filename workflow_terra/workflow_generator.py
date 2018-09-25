@@ -86,8 +86,7 @@ def my_pfn(orig_path):
     Depending on the execution environment, use either file:// or go:// PFNs
     '''
 
-    if execution_env != 'condor_pool' and \
-            re.search(r'sites/ua-mac/raw_data/stereoTop', orig_path):
+    if execution_env != 'condor_pool' and re.search(r'sites/ua-mac/raw_data/stereoTop', orig_path):
         path = re.sub(r'.*ua-mac/', 'go://terraref#403204c4-6004-11e6-8316-22000b97daec/ua-mac/', orig_path)
         return PFN(path, site='globusonline')
     return PFN('file://' + orig_path, site='local')
@@ -367,7 +366,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         os.makedirs(os.path.dirname(field_paths_qual))
     with open(field_paths_qual, 'w') as j:
         for path in fieldmosaic_quality_inputs:
-            j.write("%s\n" % path)
+            j.write("%s\n" % os.path.basename(path))
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
