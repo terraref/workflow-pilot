@@ -371,7 +371,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
-    if execution_env == 'condor_pool':
+    # TODO: Temporarily disable gzip
+    if False: #execution_env == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs(dax, "rgb_geotiff_quality_" + scan_name + ".tar.gz", fieldmosaic_quality_inputs, 0)
         fieldmosaic_quality_inputs = [rgb_geotiff_tar]
     else:
@@ -421,7 +422,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
     full_resolution_geotiff = field_paths_norm.replace("_file_paths.json", ".tif")
     full_resolution_geotiff_daxf = create_daxf(full_resolution_geotiff)
-    if execution_env == 'condor_pool':
+    # TODO: Temporarily disable gzip
+    if False: #execution_env == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs(dax, "rgb_geotiff_" + scan_name + ".tar.gz", fieldmosaic_inputs, 0)
         fieldmosaic_inputs = [rgb_geotiff_tar]
         fieldmosaic_outputs = ['fullfield_'+scan_name+'.tar.gz']
