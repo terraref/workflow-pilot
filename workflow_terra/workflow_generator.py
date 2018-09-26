@@ -11,7 +11,7 @@ from terrautils.betydb import dump_experiments
 
 dry_run = True
 limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
-scan_size_limit = 1
+scan_size_limit = 3
 execution_env = 'condor_pool'
 
 
@@ -386,19 +386,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     inputs = fieldmosaic_quality_inputs + [field_paths_qual_daxf]
     outputs = list(map(lambda x: create_daxf(x), fieldmosaic_quality_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
-    dax.addJob(job)
-
-
-    # TODO: TEMPORARY -------------------------------------------------
-    # write out the dax
-    dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
-    if not os.path.isdir(os.path.dirname(dax_file)):
-        os.makedirs(os.path.dirname(dax_file))
-    f = open(dax_file, 'w')
-    dax.writeXML(f)
-    f.close()
-    return
-    # TODO: TEMPORARY -------------------------------------------------
+    # TODO: Enable this once normal mosaic is working
+    # dax.addJob(job)
 
 
     """
@@ -445,6 +434,18 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     outputs = list(map(lambda x: create_daxf(x), fieldmosaic_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
+
+
+    # TODO: TEMPORARY -------------------------------------------------
+    # write out the dax
+    dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
+    if not os.path.isdir(os.path.dirname(dax_file)):
+        os.makedirs(os.path.dirname(dax_file))
+    f = open(dax_file, 'w')
+    dax.writeXML(f)
+    f.close()
+    return
+    # TODO: TEMPORARY -------------------------------------------------
 
 
     """
