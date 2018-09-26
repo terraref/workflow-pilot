@@ -370,8 +370,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
-    # TODO: Temporarily disable gzip
-    if False: #execution_env == 'condor_pool':
+    if execution_env == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs(dax, "rgb_geotiff_quality_" + scan_name + ".tar.gz", fieldmosaic_quality_inputs, 0)
         fieldmosaic_quality_inputs = [rgb_geotiff_tar]
     else:
@@ -386,8 +385,20 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     inputs = fieldmosaic_quality_inputs + [field_paths_qual_daxf]
     outputs = list(map(lambda x: create_daxf(x), fieldmosaic_quality_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
-    # TODO: Enable this once normal mosaic is working
-    # dax.addJob(job)
+    dax.addJob(job)
+
+
+    # TODO: TEMPORARY -------------------------------------------------
+    # write out the dax
+    dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
+    if not os.path.isdir(os.path.dirname(dax_file)):
+        os.makedirs(os.path.dirname(dax_file))
+    f = open(dax_file, 'w')
+    dax.writeXML(f)
+    f.close()
+    return
+    # TODO: TEMPORARY -------------------------------------------------
+
 
 
     """
@@ -421,7 +432,6 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         fieldmosaic_inputs = list(map(lambda x: create_daxf(x), fieldmosaic_inputs))
         fieldmosaic_outputs = [
             field_paths_norm.replace("_file_paths.json", ".vrt"),
-            full_resolution_geotiff,
             field_paths_norm.replace("_file_paths.json", "_thumb.tif"),
             field_paths_norm.replace("_file_paths.json", "_10pct.tif"),
             field_paths_norm.replace("_file_paths.json", ".png")]
@@ -431,21 +441,9 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     # JOB
     args = [field_paths_norm_daxf, scan_name, 'false']
     inputs = fieldmosaic_inputs + [field_paths_norm_daxf]
-    outputs = list(map(lambda x: create_daxf(x), fieldmosaic_outputs))
+    outputs = list(map(lambda x: create_daxf(x), fieldmosaic_outputs)) + [full_resolution_geotiff_daxf]
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
     dax.addJob(job)
-
-
-    # TODO: TEMPORARY -------------------------------------------------
-    # write out the dax
-    dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
-    if not os.path.isdir(os.path.dirname(dax_file)):
-        os.makedirs(os.path.dirname(dax_file))
-    f = open(dax_file, 'w')
-    dax.writeXML(f)
-    f.close()
-    return
-    # TODO: TEMPORARY -------------------------------------------------
 
 
     """
