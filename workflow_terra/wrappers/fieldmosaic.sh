@@ -24,12 +24,13 @@ if [ $SINGLE == 'true' ]; then
         tar xzf rgb_geotiff_quality_${SCAN}.tar.gz
     fi
 
-    echo "Here we go with a VRT test..."
+    echo "Generating VRT file..."
     VRTFILE=`echo "$IN_JSON" | sed -e 's/_file_paths.json/.vrt/g'`
     gdalbuildvrt -srcnodata "-99 -99 -99" -overwrite -input_file_list $IN_JSON $VRTFILE
 
-    chmod 755 $TOOL_SCRIPT
-    $TOOL_SCRIPT -j $IN_JSON --single
+    echo "Generating 100% GeoTIFF..."
+    GEOTIFF=`echo "$IN_JSON" | sed -e 's/_file_paths.json/.tif/g'`
+    gdal_translate -projwin -111.9750963 33.0764953 -111.9747967 33.074485715 $VRTFILE $GEOTIFF
 
 else
     if [ -e "rgb_geotiff_${SCAN}.tar.gz" ]; then
