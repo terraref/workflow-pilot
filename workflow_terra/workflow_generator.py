@@ -402,7 +402,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         field_paths_norm_daxf = create_daxf(field_paths_norm, True, dax)
     if not os.path.isdir(os.path.dirname(field_paths_norm)):
         os.makedirs(os.path.dirname(field_paths_norm))
-    with open(file_paths, 'w') as j:
+    with open(field_paths_norm, 'w') as j:
         for path in fieldmosaic_inputs:
             j.write("%s\n" % path)
 
