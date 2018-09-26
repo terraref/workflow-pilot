@@ -334,10 +334,10 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         ----- Clowder submission (upload bin2tif files to Clowder) -----
         """
         if dry_run:
-            clowder_ids = os.path.join(top_dir, 'workflow/json/rgb_'+scan_name+'_clowder_ids.json')
+            clowder_ids = os.path.join(top_dir, 'workflow/json/rgb_'+ts+'_clowder_ids.json')
             out_cid_daxf = create_daxf(clowder_ids, True, dax)
         else:
-            clowder_ids = os.path.join(rgb_geotiff_out_dir, scan_name+'_clowder_ids.json')
+            clowder_ids = os.path.join(rgb_geotiff_out_dir, 'clowder_ids.json')
             out_cid_daxf = create_daxf(clowder_ids, True, dax)
         args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
