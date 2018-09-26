@@ -10,7 +10,7 @@ from terrautils.betydb import dump_experiments
 
 
 dry_run = True
-limit_dates = ["2018-07-01", "2018-07-02", "2018-07-03"]
+limit_dates = ["2018-07-03"]
 scan_size_limit = 3
 execution_env = 'condor_pool'
 
