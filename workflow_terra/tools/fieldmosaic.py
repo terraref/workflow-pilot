@@ -25,9 +25,9 @@ def stitch_jsonfile(jsonfile, out_full):
     out_png = out_full.replace(".tif", ".png")
     out_vrt = out_full.replace(".tif", ".vrt")
 
-    #logger.debug("Creating VRT")
-    #cmd = 'gdalbuildvrt -srcnodata "-99 -99 -99" -overwrite -input_file_list ' + jsonfile +' ' + out_vrt
-    #os.system(cmd)
+    logger.debug("Creating VRT")
+    cmd = 'gdalbuildvrt -srcnodata "-99 -99 -99" -overwrite -input_file_list ' + jsonfile +' ' + out_vrt
+    os.system(cmd)
 
     if not args.single:
         logger.debug("Generating 2% resolution")

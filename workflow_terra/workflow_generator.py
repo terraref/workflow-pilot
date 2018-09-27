@@ -372,7 +372,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
     if execution_env == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs(dax, "rgb_geotiff_quality_" + scan_name + ".tar.gz", fieldmosaic_quality_inputs, 0)
-        fieldmosaic_quality_inputs = [rgb_geotiff_tar]
+        fieldmosaic_quality_inputs = [create_daxf(rgb_geotiff_tar)]
     else:
         fieldmosaic_quality_inputs = list(map(lambda x: create_daxf(x), fieldmosaic_quality_inputs))
     # the quality stitched output is small, so don't tar this up even for condorio
