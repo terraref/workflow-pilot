@@ -307,7 +307,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
 
         # JOB
         args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts,
-                tools["stereo_fixed"], tools["bety_experiments.json"], tools["bin2tif.py"]]
+                tools["stereo_fixed"], tools["bin2tif.py"]]
         inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)

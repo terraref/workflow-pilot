@@ -11,8 +11,7 @@ OUT_RIGHT=`echo "$5" | sed 's;___;/;g'`
 OUT_META=`echo "$6" | sed 's;___;/;g'`
 TIMESTAMP=`echo "$7"`
 FIXED_META=`echo "$8" | sed 's;___;/;g'`
-BETY_DUMP=`echo "$9" | sed 's;___;/;g'`
-TOOL_SCRIPT=`echo "${10}" | sed 's;___;/;g'`
+TOOL_SCRIPT=`echo "${9}" | sed 's;___;/;g'`
 
 # "fix" any remaining files with ___
 for SRC in `ls *___*`; do
@@ -21,18 +20,11 @@ for SRC in `ls *___*`; do
     cp $SRC $TRG
 done
 
-IN_DIR=`dirname $IN_LEFT`
-OUT_DIR=`dirname $OUT_LEFT`
-META_DIR=`dirname $FIXED_META`
-BETY_DIR=`dirname $BETY_DUMP`
-TOOL_DIR=`dirname $TOOL_SCRIPT`
-mkdir -p $IN_DIR $OUT_DIR $META_DIR $BETY_DIR $TOOL_DIR
-
 # TODO: Deal with this...
 # TODO: cp: cannot stat 'ua-mac/Level_1/rgb_geotiff/2018-07-01/2018-07-01__08-35-45-218/rgb_geotiff_L1_ua-mac_2018-07-01__08-35-45-218_left.tif': No such file or directory
 OUT_DIR="."
 
-export BETYDB_LOCAL_CACHE_FOLDER=$BETY_DIR
+export BETYDB_LOCAL_CACHE_FOLDER=$PWD
 export SENSOR_METADATA_CACHE=$PWD/ua-mac/sensor-metadata
 
 # touch the outputs so we don't get held jobs in case of failures
@@ -44,8 +36,6 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp $2 $IN_RIGHT
     cp $3 $IN_META
     cp $8 $FIXED_META
-    cp $9 $BETY_DUMP
-    cp ${10} $TOOL_SCRIPT
 fi
 
 chmod 755 $TOOL_SCRIPT
