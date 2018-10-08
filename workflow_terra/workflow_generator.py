@@ -352,24 +352,20 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         # dax.addJob(job)
 
     # fullfield mosaics and canopy cover CSVs end up here
-    fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % fieldmosaic_day
+    if dry_run:
+        fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % fieldmosaic_day
+    else:
+        fullfield_out_dir = 'workflow/json/%s/' % fieldmosaic_day
     if not os.path.exists(fullfield_out_dir):
         os.makedirs(fullfield_out_dir)
-
 
     """
     ----- fieldmosaic QAQC (create fullfield stitch of the nrmac quality geoTIFFs) -----
     """
     # INPUT
-    if dry_run:
-        field_paths_qual = 'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
-        field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(top_dir, 'workflow/json/%s/' % fieldmosaic_day, field_paths_qual), dax)
-    else:
-        field_paths_qual = 'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
-        field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(fullfield_out_dir, field_paths_qual), dax)
-    if not os.path.isdir(os.path.dirname(field_paths_qual)):
-        os.makedirs(os.path.dirname(field_paths_qual))
-    with open(field_paths_qual, 'w') as j:
+    field_paths_qual = 'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
+    field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(fullfield_out_dir, field_paths_qual), dax)
+    with open(os.path.join(fullfield_out_dir, field_paths_qual), 'w') as j:
         for path in fieldmosaic_quality_inputs:
             #j.write("%s\n" % re.sub(r'/', '___', path))
             #j.write("%s\n" % path)
