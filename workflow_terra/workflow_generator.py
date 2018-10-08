@@ -389,7 +389,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         field_paths_qual.replace("_file_paths.json", ".tif")]
 
     # JOB
-    args = [field_paths_qual_daxf, scan_name, 'true', tools["fieldmosaic.py"]]
+    args = [field_paths_qual_daxf, scan_name, 'true']
     inputs = fieldmosaic_quality_inputs + [field_paths_qual_daxf]
     outputs = list(map(lambda x: create_daxf(x), fieldmosaic_quality_outputs))
     job = create_job('fieldmosaic.sh', args, inputs, outputs, tools)
@@ -464,7 +464,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     cc_geo_daxf = create_daxf(cc_geo)
 
     # JOB
-    args = [canopy_cover_input_daxf, scan_name, full_resolution_geotiff_daxf, tools["bety_experiments.json"]]
+    args = [canopy_cover_input_daxf, scan_name, full_resolution_geotiff_daxf]
     inputs = [canopy_cover_input_daxf]
     outputs = [cc_bety_daxf, cc_geo_daxf]
     job = create_job('canopy_cover.sh', args, inputs, outputs, tools)

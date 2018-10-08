@@ -5,18 +5,15 @@ set -e
 IN_JSON=`echo "$1" | sed 's;___;/;g'`
 SCAN=$2
 SINGLE=$3
-TOOL_SCRIPT=`echo "$4" | sed 's;___;/;g'`
 
 OUT_DIR=`dirname $IN_JSON`
-TOOL_DIR=`dirname $TOOL_SCRIPT`
 mkdir -p $OUT_DIR $TOOL_DIR
 
-export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
+export SENSOR_METADATA_CACHE=$PWD/ua-mac/sensor-metadata
 
 # condor pool?
 if [ "$1" != "$IN_JSON" ]; then
     cp $1 $IN_JSON
-    cp $4 $TOOL_SCRIPT
 fi
 
 

@@ -11,12 +11,14 @@ OUT_RIGHT=`echo "$5" | sed 's;___;/;g'`
 OUT_JSON=`echo "$6" | sed 's;___;/;g'`
 TOOL_SCRIPT=`echo "$7" | sed 's;___;/;g'`
 
-IN_DIR=`dirname $IN_LEFT`
-OUT_DIR=`dirname $OUT_LEFT`
-TOOL_DIR=`dirname $TOOL_SCRIPT`
-mkdir -p $IN_DIR $OUT_DIR $TOOL_DIR
+# "fix" any remaining files with ___
+for SRC in `ls *___*`; do
+    TRG=`echo "$SRC" | sed 's;___;/;g'`
+    mkdir -p `dirname $TRG`
+    cp $SRC $TRG
+done
 
-export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
+export SENSOR_METADATA_CACHE=$PWD/ua-mac/sensor-metadata
 
 # touch the outputs so we don't get held jobs in case of failures
 touch $4 $5 $6
@@ -26,11 +28,10 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp $1 $IN_LEFT
     cp $2 $IN_RIGHT
     cp $3 $IN_META
-    cp $7 $TOOL_SCRIPT
 fi
 
 chmod 755 $TOOL_SCRIPT
-$TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META --out_l $OUT_LEFT --out_r $OUT_RIGHT --out_j $OUT_JSON
+./$TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META --out_l $OUT_LEFT --out_r $OUT_RIGHT --out_j $OUT_JSON
 
 # condor pool?
 if [ "$1" != "$IN_LEFT" ]; then
