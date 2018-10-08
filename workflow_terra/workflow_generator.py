@@ -293,9 +293,9 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         in_right = fileset["right"]
         in_meta = fileset["metadata"]
         # the paths here are pfns
-        in_left_daxf = create_daxf(remove_base_path(in_left, scan_root), True, dax)
-        in_right_daxf = create_daxf(remove_base_path(in_right, scan_root), True, dax)
-        in_meta_daxf = create_daxf(remove_base_path(in_meta, scan_root), True, dax)
+        in_left_daxf = create_daxf(remove_base_path(in_left, scan_root), in_left, dax)
+        in_right_daxf = create_daxf(remove_base_path(in_right, scan_root), in_right, dax)
+        in_meta_daxf = create_daxf(remove_base_path(in_meta, scan_root), in_meta, dax)
 
         # OUTPUT
         out_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts
@@ -475,11 +475,11 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     ----- Clowder submission (upload bin2tif files to Clowder) -----
     """
     if dry_run:
-        clowder_ids = os.path.join(top_dir, 'workflow/json/ff_'+scan_name+'_clowder_ids.json')
-        out_cid_daxf = create_daxf(clowder_ids, True, dax)
+        clowder_ids = 'workflow/json/ff_'+scan_name+'_clowder_ids.json'
+        out_cid_daxf = create_daxf(clowder_ids, os.path.join(top_dir, clowder_ids), dax)
     else:
-        clowder_ids = os.path.join(fullfield_out_dir, scan_name+'_clowder_ids.json')
-        out_cid_daxf = create_daxf(clowder_ids, True, dax)
+        clowder_ids = 'ff_'+scan_name+'_clowder_ids.json'
+        out_cid_daxf = create_daxf(clowder_ids, os.path.join(fullfield_out_dir, clowder_ids), dax)
     args = ['fullfield', scan_name, fullfield_out_dir]
     inputs = ([field_paths_qual_daxf, field_paths_norm_daxf] +
               list(map(lambda x: create_daxf(x), fieldmosaic_quality_outputs)) +
@@ -494,11 +494,11 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     ----- BETY submission (upload trait CSVs) -----
     """
     if dry_run:
-        bety_ids = os.path.join(top_dir, 'workflow/json/'+scan_name+'_bety_ids.json')
-        out_bety_daxf = create_daxf(bety_ids, True, dax)
+        bety_ids = 'workflow/json/'+scan_name+'_bety_ids.json'
+        out_bety_daxf = create_daxf(bety_ids, os.path.join(top_dir, bety_ids), dax)
     else:
-        bety_ids = os.path.join(fullfield_out_dir, scan_name+'_bety_ids.json')
-        out_bety_daxf = create_daxf(bety_ids, True, dax)
+        bety_ids = scan_name+'_bety_ids.json'
+        out_bety_daxf = create_daxf(bety_ids, os.path.join(fullfield_out_dir, bety_ids), dax)
     args = ['bety', 'canopy_cover', cc_bety_daxf]
     inputs = [cc_bety_daxf]
     outputs = [out_bety_daxf]
@@ -511,11 +511,11 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     ----- Geostreams submission (upload geo CSVs - requires fullfield Clowder ID) -----
     """
     if dry_run:
-        geo_ids = os.path.join(top_dir, 'workflow/json/'+scan_name+'_geo_ids.json')
-        out_geo_daxf = create_daxf(geo_ids, True, dax)
+        geo_ids = 'workflow/json/'+scan_name+'_geo_ids.json'
+        out_geo_daxf = create_daxf(geo_ids, os.path.join(top_dir, geo_ids), dax)
     else:
-        geo_ids = os.path.join(fullfield_out_dir, scan_name+'_geo_ids.json')
-        out_geo_daxf = create_daxf(geo_ids, True, dax)
+        geo_ids = scan_name+'_geo_ids.json'
+        out_geo_daxf = create_daxf(geo_ids, os.path.join(fullfield_out_dir, geo_ids), dax)
     args = ['geo', 'canopy_cover', cc_geo_daxf]
     inputs = [out_cid_daxf, cc_geo_daxf]
     outputs = [out_geo_daxf]
