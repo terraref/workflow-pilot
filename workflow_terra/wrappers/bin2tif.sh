@@ -31,7 +31,7 @@ mkdir -p $IN_DIR $OUT_DIR $META_DIR $BETY_DIR $TOOL_DIR
 OUT_DIR="."
 
 export BETYDB_LOCAL_CACHE_FOLDER=$BETY_DIR
-export SENSOR_METADATA_CACHE=data/terraref/sites/ua-mac/sensor-metadata
+export SENSOR_METADATA_CACHE=ua-mac/sensor-metadata
 
 # touch the outputs so we don't get held jobs in case of failures
 touch $4 $5 $6
