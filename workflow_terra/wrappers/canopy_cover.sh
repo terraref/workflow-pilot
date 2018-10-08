@@ -13,5 +13,4 @@ if [ -e "fullfield_${SCAN}.tar.gz" ]; then
     tar xzf fullfield_${SCAN}.tar.gz
 fi
 
-chmod 755 canopyCover.py
 ./canopyCover.py -i $IMAGE

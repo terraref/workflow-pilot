@@ -9,7 +9,6 @@ IN_META=`echo "$3" | sed 's;___;/;g'`
 OUT_LEFT=`echo "$4" | sed 's;___;/;g'`
 OUT_RIGHT=`echo "$5" | sed 's;___;/;g'`
 OUT_JSON=`echo "$6" | sed 's;___;/;g'`
-TOOL_SCRIPT=`echo "$7" | sed 's;___;/;g'`
 
 # "fix" any remaining files with ___
 for SRC in `ls *___*`; do
@@ -30,8 +29,7 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp $3 $IN_META
 fi
 
-chmod 755 $TOOL_SCRIPT
-./$TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META --out_l $OUT_LEFT --out_r $OUT_RIGHT --out_j $OUT_JSON
+./nrmac.py -l $IN_LEFT -r $IN_RIGHT -m $IN_META --out_l $OUT_LEFT --out_r $OUT_RIGHT --out_j $OUT_JSON
 
 # condor pool?
 if [ "$1" != "$IN_LEFT" ]; then

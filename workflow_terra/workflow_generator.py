@@ -292,22 +292,20 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         in_left = fileset["left"]
         in_right = fileset["right"]
         in_meta = fileset["metadata"]
-        # the paths here are pfns
         in_left_daxf = create_daxf(remove_base_path(in_left, scan_root), in_left, dax)
         in_right_daxf = create_daxf(remove_base_path(in_right, scan_root), in_right, dax)
         in_meta_daxf = create_daxf(remove_base_path(in_meta, scan_root), in_meta, dax)
 
         # OUTPUT
-        out_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts
-        out_right = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_right.tif' % ts
-        out_meta = rgb_geotiff_out_dir+'clean_metadata.json'
+        out_left = os.path.join(rgb_geotiff_out_dir, 'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts)
+        out_right = os.path.join(rgb_geotiff_out_dir, 'rgb_geotiff_L1_ua-mac_%s_right.tif' % ts)
+        out_meta = os.path.join(rgb_geotiff_out_dir, 'clean_metadata.json')
         out_left_daxf = create_daxf(out_left)
         out_right_daxf = create_daxf(out_right)
         out_meta_daxf = create_daxf(out_meta)
 
         # JOB
-        args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts,
-                tools["stereo_fixed"], tools["bin2tif.py"]]
+        args = [in_left_daxf, in_right_daxf, in_meta_daxf, out_left_daxf, out_right_daxf, out_meta_daxf, ts, tools["stereo_fixed"]]
         inputs = [in_left_daxf, in_right_daxf, in_meta_daxf]
         outputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         job = create_job('bin2tif.sh', args, inputs, outputs, tools)
@@ -326,8 +324,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         out_nrmac_daxf = create_daxf(out_nrmac)
 
         # JOB
-        args = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf,
-                out_nrmac_daxf, tools["nrmac.py"]]
+        args = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf]
         outputs = [out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         job = create_job('nrmac.sh', args, inputs, outputs, tools)
@@ -345,7 +342,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
             clowder_ids = 'workflow/json/rgb_'+ts+'_clowder_ids.json'
             out_cid_daxf = create_daxf(clowder_ids, os.path.join(top_dir, clowder_ids), dax)
         else:
-            clowder_ids = 'clowder_ids.json'
+            clowder_ids = 'rgb_'+ts+'clowder_ids.json'
             out_cid_daxf = create_daxf(clowder_ids, os.path.join(rgb_geotiff_out_dir, clowder_ids), dax)
         args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]

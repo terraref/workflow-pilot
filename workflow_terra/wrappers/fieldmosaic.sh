@@ -1,21 +1,19 @@
 #!/bin/bash
 
 set -e
+set -x
 
 IN_JSON=`echo "$1" | sed 's;___;/;g'`
 SCAN=$2
 SINGLE=$3
 
 OUT_DIR=`dirname $IN_JSON`
-mkdir -p $OUT_DIR $TOOL_DIR
-
-export SENSOR_METADATA_CACHE=$PWD/ua-mac/sensor-metadata
+mkdir -p $OUT_DIR
 
 # condor pool?
 if [ "$1" != "$IN_JSON" ]; then
     cp $1 $IN_JSON
 fi
-
 
 if [ -e "rgb_geotiff_${SCAN}.tar.gz" ]; then
     echo "Unzipping rgb_geotiff_quality_${SCAN}.tar.gz..."

@@ -11,7 +11,6 @@ OUT_RIGHT=`echo "$5" | sed 's;___;/;g'`
 OUT_META=`echo "$6" | sed 's;___;/;g'`
 TIMESTAMP=`echo "$7"`
 FIXED_META=`echo "$8" | sed 's;___;/;g'`
-TOOL_SCRIPT=`echo "${9}" | sed 's;___;/;g'`
 
 # "fix" any remaining files with ___
 for SRC in `ls *___*`; do
@@ -38,8 +37,7 @@ if [ "$1" != "$IN_LEFT" ]; then
     cp $8 $FIXED_META
 fi
 
-chmod 755 $TOOL_SCRIPT
-./$TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
+./bin2tif.py -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
 
 # condor pool?
 if [ "$1" != "$IN_LEFT" ]; then
