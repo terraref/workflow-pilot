@@ -11,8 +11,13 @@ OUT_RIGHT=`echo "$5" | sed 's;___;/;g'`
 OUT_META=`echo "$6" | sed 's;___;/;g'`
 TIMESTAMP=`echo "$7"`
 FIXED_META=`echo "$8" | sed 's;___;/;g'`
-BETY_DUMP=`echo "$9" | sed 's;___;/;g'`
-TOOL_SCRIPT=`echo "${10}" | sed 's;___;/;g'`
+
+# "fix" any remaining files with ___
+for SRC in `ls *___*`; do
+    TRG=`echo "$SRC" | sed 's;___;/;g'`
+    mkdir -p `dirname $TRG`
+    cp $SRC $TRG
+done
 
 IN_DIR=`dirname $IN_LEFT`
 OUT_DIR=`dirname $OUT_LEFT`
@@ -42,7 +47,7 @@ if [ "$1" != "$IN_LEFT" ]; then
 fi
 
 chmod 755 $TOOL_SCRIPT
-$TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
+./$TOOL_SCRIPT -l $IN_LEFT -r $IN_RIGHT -m $IN_META -t $TIMESTAMP -o $OUT_DIR
 
 # condor pool?
 if [ "$1" != "$IN_LEFT" ]; then

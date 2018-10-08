@@ -91,19 +91,26 @@ def my_pfn(orig_path):
         return PFN(path, site='globusonline')
     return PFN('file://' + orig_path, site='local')
 
-def create_daxf(file_path, include_pfn=False, dax=None):
+def create_daxf(lfn, pfn=False, dax=None):
     """Return File entry for dax catalog based on file path.
 
-        include_pfn = whether to add physical filename to dax, e.g. for inputs.
+        pfn = full path for the file if it is an input
         dax = if provided, file will be added to dax, e.g. for inputs.
     """
 
-    daxf = File(my_lfn(file_path))
-    if include_pfn:
-        daxf.addPFN(my_pfn(file_path))
+    daxf = File(my_lfn(lfn))
+    if pfn:
+        daxf.addPFN(my_pfn(pfn))
     if dax:
         dax.addFile(daxf)
     return daxf
+
+def remove_base_path(path, to_remove):
+    if path.startswith(to_remove):
+        path = path.replace(to_remove, '', 1)
+        while path[0] == '/':
+            path = path.replace('/', '', 1)
+    return path
 
 def generate_tools_list():
     """
@@ -116,32 +123,32 @@ def generate_tools_list():
     dump_experiments()
 
     toollist = [
-        os.path.join(top_dir+"/tools", "bin2tif.py"),
-        os.path.join(top_dir+"/tools", "nrmac.py"),
-        os.path.join(top_dir+"/tools", "canopyCover.py"),
-        os.path.join(top_dir+"/tools", "fieldmosaic.py"),
-        os.path.join(top_dir+"/tools", "submit_clowder.py"),
-        os.path.join(top_dir+"/tools", "submit_bety.py"),
-        os.path.join(top_dir+"/tools", "submit_geo.py"),
-        os.path.join(top_dir+"/tools", "bety_experiments.json")
+        "bin2tif.py",
+        "nrmac.py",
+        "canopyCover.py",
+        "fieldmosaic.py",
+        "submit_clowder.py",
+        "submit_bety.py",
+        "submit_geo.py",
+        "bety_experiments.json"
     ]
 
     print("Including /tools directory files")
     for t in toollist:
-        tool_daxf = create_daxf(t, True)
+        tool_daxf = create_daxf(t, os.path.join(top_dir+"/tools", t))
         # Use filename as dict key in case we need it as input later
-        out[t.split("/")[-1]] = tool_daxf
+        out[t] = tool_daxf
 
     sensor_metadata_list = [
-        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/stereo/sensor_fixed_metadata.json"),
-        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/flirIrCamera/sensor_fixed_metadata.json"),
-        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/scanner3D/sensor_fixed_metadata.json"),
-        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/VNIR/sensor_fixed_metadata.json"),
-        os.path.join(scan_root, "ua-mac/sensor-metadata/sensors/scanalyzer/sensor_fixed_metadata.json")
+        "ua-mac/sensor-metadata/sensors/stereo/sensor_fixed_metadata.json",
+        "ua-mac/sensor-metadata/sensors/flirIrCamera/sensor_fixed_metadata.json",
+        "ua-mac/sensor-metadata/sensors/scanner3D/sensor_fixed_metadata.json",
+        "ua-mac/sensor-metadata/sensors/VNIR/sensor_fixed_metadata.json",
+        "ua-mac/sensor-metadata/sensors/scanalyzer/sensor_fixed_metadata.json"
     ]
     print("Including sensor fixed metadata")
     for s in sensor_metadata_list:
-        sensor_metadata_daxf = create_daxf(s, True)
+        sensor_metadata_daxf = create_daxf(s, os.path.join(scan_root, s))
         # Use '$SENSOR_fixed' as dict key in case we need it as input later
         out[s.split("/")[-2]+"_fixed"] = sensor_metadata_daxf
 
@@ -285,9 +292,10 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         in_left = fileset["left"]
         in_right = fileset["right"]
         in_meta = fileset["metadata"]
-        in_left_daxf = create_daxf(in_left, True, dax)
-        in_right_daxf = create_daxf(in_right, True, dax)
-        in_meta_daxf = create_daxf(in_meta, True, dax)
+        # the paths here are pfns
+        in_left_daxf = create_daxf(remove_base_path(in_left, scan_root), True, dax)
+        in_right_daxf = create_daxf(remove_base_path(in_right, scan_root), True, dax)
+        in_meta_daxf = create_daxf(remove_base_path(in_meta, scan_root), True, dax)
 
         # OUTPUT
         out_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts
@@ -334,11 +342,11 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         ----- Clowder submission (upload bin2tif files to Clowder) -----
         """
         if dry_run:
-            clowder_ids = os.path.join(top_dir, 'workflow/json/rgb_'+ts+'_clowder_ids.json')
-            out_cid_daxf = create_daxf(clowder_ids, True, dax)
+            clowder_ids = 'workflow/json/rgb_'+ts+'_clowder_ids.json'
+            out_cid_daxf = create_daxf(clowder_ids, os.path.join(top_dir, clowder_ids), dax)
         else:
-            clowder_ids = os.path.join(rgb_geotiff_out_dir, 'clowder_ids.json')
-            out_cid_daxf = create_daxf(clowder_ids, True, dax)
+            clowder_ids = 'clowder_ids.json'
+            out_cid_daxf = create_daxf(clowder_ids, os.path.join(rgb_geotiff_out_dir, clowder_ids), dax)
         args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         outputs = [out_cid_daxf]
@@ -357,11 +365,11 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     # INPUT
     if dry_run:
-        field_paths_qual = os.path.join(top_dir, 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name))
-        field_paths_qual_daxf = create_daxf(field_paths_qual, True, dax)
+        field_paths_qual = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
+        field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(top_dir, field_paths_qual), dax)
     else:
-        field_paths_qual = os.path.join(fullfield_out_dir, 'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name))
-        field_paths_qual_daxf = create_daxf(field_paths_qual, True, dax)
+        field_paths_qual = 'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
+        field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(fullfield_out_dir, field_paths_qual), dax)
     if not os.path.isdir(os.path.dirname(field_paths_qual)):
         os.makedirs(os.path.dirname(field_paths_qual))
     with open(field_paths_qual, 'w') as j:
@@ -407,10 +415,10 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     # INPUT
     if dry_run:
         field_paths_norm = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
-        field_paths_norm_daxf = create_daxf(field_paths_norm, True, dax)
+        field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(top_dir, field_paths_norm), dax)
     else:
-        field_paths_norm = fullfield_out_dir+'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, scan_name)
-        field_paths_norm_daxf = create_daxf(field_paths_norm, True, dax)
+        field_paths_norm = 'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, scan_name)
+        field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(fullfield_out_dir, field_paths_norm), dax)
     if not os.path.isdir(os.path.dirname(field_paths_norm)):
         os.makedirs(os.path.dirname(field_paths_norm))
     with open(field_paths_norm, 'w') as j:
