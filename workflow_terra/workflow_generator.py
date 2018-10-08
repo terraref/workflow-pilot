@@ -408,17 +408,11 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     ----- fieldmosaic (create fullfield stitch of the actual geoTIFFs) -----
     """
     # INPUT
-    if dry_run:
-        field_paths_norm = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
-        field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(top_dir, field_paths_norm), dax)
-    else:
-        field_paths_norm = 'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, scan_name)
-        field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(fullfield_out_dir, field_paths_norm), dax)
-    if not os.path.isdir(os.path.dirname(field_paths_norm)):
-        os.makedirs(os.path.dirname(field_paths_norm))
-    with open(field_paths_norm, 'w') as j:
+    field_paths_norm = 'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, scan_name)
+    field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(fullfield_out_dir, field_paths_norm), dax)
+    with open(os.path.join(fullfield_out_dir, field_paths_norm), 'w') as j:
         for path in fieldmosaic_inputs:
-            j.write("%s\n" % path)
+            j.write("%s\n" % os.path.basename(path))
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
