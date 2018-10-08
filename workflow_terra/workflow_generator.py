@@ -362,8 +362,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     # INPUT
     if dry_run:
-        field_paths_qual = 'workflow/json/%s/fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, fieldmosaic_day, scan_name)
-        field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(top_dir, field_paths_qual), dax)
+        field_paths_qual = 'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
+        field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(top_dir, 'workflow/json/%s/' % fieldmosaic_day, field_paths_qual), dax)
     else:
         field_paths_qual = 'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
         field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(fullfield_out_dir, field_paths_qual), dax)
@@ -372,7 +372,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     with open(field_paths_qual, 'w') as j:
         for path in fieldmosaic_quality_inputs:
             #j.write("%s\n" % re.sub(r'/', '___', path))
-            j.write("%s\n" % path)
+            #j.write("%s\n" % path)
+            j.write("%s\n" % os.path.basename(path))
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
