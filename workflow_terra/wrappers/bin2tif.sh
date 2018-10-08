@@ -11,6 +11,8 @@ OUT_RIGHT=`echo "$5" | sed 's;___;/;g'`
 OUT_META=`echo "$6" | sed 's;___;/;g'`
 TIMESTAMP=`echo "$7"`
 FIXED_META=`echo "$8" | sed 's;___;/;g'`
+BETY_DUMP=`echo "$9" | sed 's;___;/;g'`
+TOOL_SCRIPT=`echo "${10}" | sed 's;___;/;g'`
 
 # "fix" any remaining files with ___
 for SRC in `ls *___*`; do
@@ -31,7 +33,7 @@ mkdir -p $IN_DIR $OUT_DIR $META_DIR $BETY_DIR $TOOL_DIR
 OUT_DIR="."
 
 export BETYDB_LOCAL_CACHE_FOLDER=$BETY_DIR
-export SENSOR_METADATA_CACHE=ua-mac/sensor-metadata
+export SENSOR_METADATA_CACHE=$PWD/ua-mac/sensor-metadata
 
 # touch the outputs so we don't get held jobs in case of failures
 touch $4 $5 $6
