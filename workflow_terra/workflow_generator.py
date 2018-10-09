@@ -315,9 +315,9 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         ----- nrmac (determine quality score of input geoTIFF and create low-res output geoTIFF) -----
         """
         # OUTPUT
-        out_qual_left = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts
-        out_qual_right = rgb_geotiff_out_dir+'rgb_geotiff_L1_ua-mac_%s_nrmac_right.tif' % ts
-        out_nrmac = rgb_geotiff_out_dir+'nrmac_scores.json'
+        out_qual_left = os.path.join(rgb_geotiff_out_dir, 'rgb_geotiff_L1_ua-mac_%s_nrmac_left.tif' % ts)
+        out_qual_right = os.path.join(rgb_geotiff_out_dir, 'rgb_geotiff_L1_ua-mac_%s_nrmac_right.tif' % ts)
+        out_nrmac = os.path.join(rgb_geotiff_out_dir, 'nrmac_scores.json')
         out_qual_left_daxf = create_daxf(out_qual_left)
         out_qual_right_daxf = create_daxf(out_qual_right)
         out_nrmac_daxf = create_daxf(out_nrmac)
