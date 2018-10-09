@@ -14,12 +14,10 @@ limit_dates = ["2018-07-03"]
 scan_size_limit = 3
 execution_env = 'condor_pool'
 
-
-top_dir = os.getcwd()
 sites_dir = "/data/terraref/sites/"
 # Outputs will appear here
 if dry_run:
-    root_dir = os.path.join(top_dir, "workflow/sites/")
+    root_dir = os.path.join(os.getcwd(), "workflow/sites/")
 else:
     root_dir = "/data/terraref/sites/"
 
@@ -136,7 +134,7 @@ def generate_tools_list():
 
     print("Including /tools directory files")
     for t in toollist:
-        tool_daxf = create_daxf(t, os.path.join(top_dir+"/tools", t))
+        tool_daxf = create_daxf(t, os.path.join(os.getcwd()+"/tools", t))
         # Use filename as dict key in case we need it as input later
         out[t] = tool_daxf
 
