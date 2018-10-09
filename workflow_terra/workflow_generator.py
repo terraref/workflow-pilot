@@ -357,8 +357,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     # INPUT
     field_paths_qual = 'fullfield_L1_ua-mac_%s_%s_nrmac_file_paths.json' % (fieldmosaic_day, scan_name)
-    field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(fullfield_out_dir, field_paths_qual), dax)
-    with open(os.path.join(fullfield_out_dir, field_paths_qual), 'w') as j:
+    field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(root_dir, fullfield_out_dir, field_paths_qual), dax)
+    with open(os.path.join(root_dir, fullfield_out_dir, field_paths_qual), 'w') as j:
         for path in fieldmosaic_quality_inputs:
             #j.write("%s\n" % re.sub(r'/', '___', path))
             j.write("%s\n" % os.path.basename(path))
@@ -401,8 +401,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     # INPUT
     field_paths_norm = 'fullfield_L1_ua-mac_%s_%s_file_paths.json' % (fieldmosaic_day, scan_name)
-    field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(fullfield_out_dir, field_paths_norm), dax)
-    with open(os.path.join(fullfield_out_dir, field_paths_norm), 'w') as j:
+    field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(root_dir, fullfield_out_dir, field_paths_norm), dax)
+    with open(os.path.join(root_dir, fullfield_out_dir, field_paths_norm), 'w') as j:
         for path in fieldmosaic_inputs:
             j.write("%s\n" % os.path.basename(path))
 
