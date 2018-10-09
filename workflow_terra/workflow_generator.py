@@ -16,7 +16,8 @@ execution_env = 'condor_pool'
 
 
 top_dir = os.getcwd()
-scan_root = "/data/terraref/sites/"
+sites_dir = "/data/terraref/sites/"
+# Outputs will appear here
 if dry_run:
     root_dir = os.path.join(top_dir, "workflow/sites/")
 else:
@@ -148,7 +149,7 @@ def generate_tools_list():
     ]
     print("Including sensor fixed metadata")
     for s in sensor_metadata_list:
-        sensor_metadata_daxf = create_daxf(s, os.path.join(scan_root, s))
+        sensor_metadata_daxf = create_daxf(s, os.path.join(sites_dir, s))
         # Use '$SENSOR_fixed' as dict key in case we need it as input later
         out[s.split("/")[-2]+"_fixed"] = sensor_metadata_daxf
 
@@ -203,12 +204,12 @@ def process_raw_filelist():
 
     tools = generate_tools_list()
 
-    print("Beginning scan of %s" % os.path.join(scan_root, "ua-mac/raw_data/stereoTop"))
-    dates = sorted(os.listdir(os.path.join(scan_root, "ua-mac/raw_data/stereoTop")))
+    print("Beginning scan of %s" % os.path.join(sites_dir, "ua-mac/raw_data/stereoTop"))
+    dates = sorted(os.listdir(os.path.join(sites_dir, "ua-mac/raw_data/stereoTop")))
     for date in dates:
         if date not in limit_dates:
             continue
-        date_dir = os.path.join(os.path.join(scan_root, "ua-mac/raw_data/stereoTop"), date)
+        date_dir = os.path.join(os.path.join(sites_dir, "ua-mac/raw_data/stereoTop"), date)
         print("Scanning %s" % date_dir)
 
         timestamps = sorted(os.listdir(date_dir))
@@ -280,7 +281,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
             fieldmosaic_day = day
 
         # converted geoTIFFs, quality score JSON and quality score geoTIFF end up here
-        rgb_geotiff_out_dir = 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts)
+        rgb_geotiff_out_dir = os.path.join(root_dir, 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts))
         if not os.path.exists(rgb_geotiff_out_dir):
             os.makedirs(rgb_geotiff_out_dir)
 
@@ -292,9 +293,9 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         in_left = fileset["left"]
         in_right = fileset["right"]
         in_meta = fileset["metadata"]
-        in_left_daxf = create_daxf(remove_base_path(in_left, scan_root), in_left, dax)
-        in_right_daxf = create_daxf(remove_base_path(in_right, scan_root), in_right, dax)
-        in_meta_daxf = create_daxf(remove_base_path(in_meta, scan_root), in_meta, dax)
+        in_left_daxf = create_daxf(remove_base_path(in_left, sites_dir), in_left, dax)
+        in_right_daxf = create_daxf(remove_base_path(in_right, sites_dir), in_right, dax)
+        in_meta_daxf = create_daxf(remove_base_path(in_meta, sites_dir), in_meta, dax)
 
         # OUTPUT
         out_left = os.path.join(rgb_geotiff_out_dir, 'rgb_geotiff_L1_ua-mac_%s_left.tif' % ts)
@@ -338,12 +339,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         """
         ----- Clowder submission (upload bin2tif files to Clowder) -----
         """
-        if dry_run:
-            clowder_ids = 'workflow/json/rgb_'+ts+'_clowder_ids.json'
-            out_cid_daxf = create_daxf(clowder_ids, os.path.join(top_dir, clowder_ids), dax)
-        else:
-            clowder_ids = 'rgb_'+ts+'clowder_ids.json'
-            out_cid_daxf = create_daxf(clowder_ids, os.path.join(rgb_geotiff_out_dir, clowder_ids), dax)
+        clowder_ids = 'rgb_'+ts+'clowder_ids.json'
+        out_cid_daxf = create_daxf(clowder_ids, os.path.join(rgb_geotiff_out_dir, clowder_ids), dax)
         args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         outputs = [out_cid_daxf]
@@ -351,11 +348,9 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         # TODO: Enable this last
         # dax.addJob(job)
 
+
     # fullfield mosaics and canopy cover CSVs end up here
-    if dry_run:
-        fullfield_out_dir = 'workflow/json/%s/' % fieldmosaic_day
-    else:
-        fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % fieldmosaic_day
+    fullfield_out_dir = os.path.join(root_dir, 'ua-mac/Level_1/fullfield/%s/' % fieldmosaic_day)
     if not os.path.exists(fullfield_out_dir):
         os.makedirs(fullfield_out_dir)
 
@@ -368,7 +363,6 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     with open(os.path.join(fullfield_out_dir, field_paths_qual), 'w') as j:
         for path in fieldmosaic_quality_inputs:
             #j.write("%s\n" % re.sub(r'/', '___', path))
-            #j.write("%s\n" % path)
             j.write("%s\n" % os.path.basename(path))
 
     # OUTPUT
@@ -418,8 +412,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
     full_resolution_geotiff = field_paths_norm.replace("_file_paths.json", ".tif")
     full_resolution_geotiff_daxf = create_daxf(full_resolution_geotiff)
-    # TODO: Temporarily disable gzip
-    if False: #execution_env == 'condor_pool':
+    if execution_env == 'condor_pool':
         rgb_geotiff_tar = merge_rgb_geotiffs(dax, "rgb_geotiff_" + scan_name + ".tar.gz", fieldmosaic_inputs, 0)
         fieldmosaic_inputs = [rgb_geotiff_tar]
         fieldmosaic_outputs = ['fullfield_'+scan_name+'.tar.gz']
@@ -463,12 +456,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     ----- Clowder submission (upload bin2tif files to Clowder) -----
     """
-    if dry_run:
-        clowder_ids = 'workflow/json/ff_'+scan_name+'_clowder_ids.json'
-        out_cid_daxf = create_daxf(clowder_ids, os.path.join(top_dir, clowder_ids), dax)
-    else:
-        clowder_ids = 'ff_'+scan_name+'_clowder_ids.json'
-        out_cid_daxf = create_daxf(clowder_ids, os.path.join(fullfield_out_dir, clowder_ids), dax)
+    clowder_ids = 'ff_'+scan_name+'_clowder_ids.json'
+    out_cid_daxf = create_daxf(clowder_ids, os.path.join(fullfield_out_dir, clowder_ids), dax)
     args = ['fullfield', scan_name, fullfield_out_dir]
     inputs = ([field_paths_qual_daxf, field_paths_norm_daxf] +
               list(map(lambda x: create_daxf(x), fieldmosaic_quality_outputs)) +
@@ -482,12 +471,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     ----- BETY submission (upload trait CSVs) -----
     """
-    if dry_run:
-        bety_ids = 'workflow/json/'+scan_name+'_bety_ids.json'
-        out_bety_daxf = create_daxf(bety_ids, os.path.join(top_dir, bety_ids), dax)
-    else:
-        bety_ids = scan_name+'_bety_ids.json'
-        out_bety_daxf = create_daxf(bety_ids, os.path.join(fullfield_out_dir, bety_ids), dax)
+    bety_ids = scan_name+'_bety_ids.json'
+    out_bety_daxf = create_daxf(bety_ids, os.path.join(fullfield_out_dir, bety_ids), dax)
     args = ['bety', 'canopy_cover', cc_bety_daxf]
     inputs = [cc_bety_daxf]
     outputs = [out_bety_daxf]
@@ -499,12 +484,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     """
     ----- Geostreams submission (upload geo CSVs - requires fullfield Clowder ID) -----
     """
-    if dry_run:
-        geo_ids = 'workflow/json/'+scan_name+'_geo_ids.json'
-        out_geo_daxf = create_daxf(geo_ids, os.path.join(top_dir, geo_ids), dax)
-    else:
-        geo_ids = scan_name+'_geo_ids.json'
-        out_geo_daxf = create_daxf(geo_ids, os.path.join(fullfield_out_dir, geo_ids), dax)
+    geo_ids = scan_name+'_geo_ids.json'
+    out_geo_daxf = create_daxf(geo_ids, os.path.join(fullfield_out_dir, geo_ids), dax)
     args = ['geo', 'canopy_cover', cc_geo_daxf]
     inputs = [out_cid_daxf, cc_geo_daxf]
     outputs = [out_geo_daxf]
