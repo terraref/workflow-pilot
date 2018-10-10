@@ -360,8 +360,6 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(root_dir, fullfield_out_dir, field_paths_qual), dax)
     with open(os.path.join(root_dir, fullfield_out_dir, field_paths_qual), 'w') as j:
         for path in fieldmosaic_quality_inputs:
-            #j.write("%s\n" % re.sub(r'/', '___', path))
-            #j.write("%s\n" % os.path.basename(path))
             j.write("%s\n" % path)
 
     # OUTPUT
@@ -384,19 +382,6 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     dax.addJob(job)
 
 
-    # TODO: TEMPORARY -------------------------------------------------
-    # write out the dax
-    dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
-    if not os.path.isdir(os.path.dirname(dax_file)):
-        os.makedirs(os.path.dirname(dax_file))
-    f = open(dax_file, 'w')
-    dax.writeXML(f)
-    f.close()
-    return
-    # TODO: TEMPORARY -------------------------------------------------
-
-
-
     """
     ----- fieldmosaic (create fullfield stitch of the actual geoTIFFs) -----
     """
@@ -405,8 +390,6 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(root_dir, fullfield_out_dir, field_paths_norm), dax)
     with open(os.path.join(root_dir, fullfield_out_dir, field_paths_norm), 'w') as j:
         for path in fieldmosaic_inputs:
-            #j.write("%s\n" % re.sub(r'/', '___', path))
-            #j.write("%s\n" % os.path.basename(path))
             j.write("%s\n" % path)
 
     # OUTPUT
@@ -452,6 +435,18 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     outputs = [cc_bety_daxf, cc_geo_daxf]
     job = create_job('canopy_cover.sh', args, inputs, outputs, tools)
     dax.addJob(job)
+
+
+    # TODO: TEMPORARY -------------------------------------------------
+    # write out the dax
+    dax_file = 'workflow/generated/singletest.xml' # % (date, scan_name)
+    if not os.path.isdir(os.path.dirname(dax_file)):
+        os.makedirs(os.path.dirname(dax_file))
+    f = open(dax_file, 'w')
+    dax.writeXML(f)
+    f.close()
+    return
+    # TODO: TEMPORARY -------------------------------------------------
 
 
     """
