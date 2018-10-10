@@ -18,6 +18,9 @@ fi
 if [ -e "rgb_geotiff_${SCAN}.tar.gz" ]; then
     echo "Unzipping rgb_geotiff_quality_${SCAN}.tar.gz..."
     tar xzf rgb_geotiff_${SCAN}.tar.gz
+else
+    echo "No .tar.gz file found to unzip."
+    echo `ls`
 fi
 
 
