@@ -15,12 +15,14 @@ if [ "$1" != "$IN_JSON" ]; then
     cp $1 $IN_JSON
 fi
 
-if [ -e "rgb_geotiff_${SCAN}.tar.gz" ]; then
+if [ -e "rgb_geotiff_quality_${SCAN}.tar.gz" ]; then
     echo "Unzipping rgb_geotiff_quality_${SCAN}.tar.gz..."
     tar xzf rgb_geotiff_${SCAN}.tar.gz
+else if [ -e "rgb_geotiff_${SCAN}.tar.gz" ]; then
+    echo "Unzipping rgb_geotiff_${SCAN}.tar.gz..."
+    tar xzf rgb_geotiff_${SCAN}.tar.gz
 else
-    echo "rgb_geotiff_${SCAN}.tar.gz not found."
-    ls | grep tar
+    echo "No .tar.gz file found."
 fi
 
 
