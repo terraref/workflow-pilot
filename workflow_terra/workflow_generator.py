@@ -360,8 +360,9 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(root_dir, fullfield_out_dir, field_paths_qual), dax)
     with open(os.path.join(root_dir, fullfield_out_dir, field_paths_qual), 'w') as j:
         for path in fieldmosaic_quality_inputs:
-            j.write("%s\n" % re.sub(r'/', '___', path))
+            #j.write("%s\n" % re.sub(r'/', '___', path))
             #j.write("%s\n" % os.path.basename(path))
+            j.write("%s\n" % path)
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
@@ -404,7 +405,9 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(root_dir, fullfield_out_dir, field_paths_norm), dax)
     with open(os.path.join(root_dir, fullfield_out_dir, field_paths_norm), 'w') as j:
         for path in fieldmosaic_inputs:
-            j.write("%s\n" % os.path.basename(path))
+            #j.write("%s\n" % re.sub(r'/', '___', path))
+            #j.write("%s\n" % os.path.basename(path))
+            j.write("%s\n" % path)
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
