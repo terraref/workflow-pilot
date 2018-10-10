@@ -280,7 +280,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
 
         # converted geoTIFFs, quality score JSON and quality score geoTIFF end up here
         rgb_geotiff_out_dir = 'ua-mac/Level_1/rgb_geotiff/%s/%s/' % (day, ts)
-        if not os.path.exists(rgb_geotiff_out_dir):
+        if not os.path.exists(rgb_geotiff_out_dir) and not dry_run:
             os.makedirs(rgb_geotiff_out_dir)
 
 
@@ -349,7 +349,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
 
     # fullfield mosaics and canopy cover CSVs end up here
     fullfield_out_dir = 'ua-mac/Level_1/fullfield/%s/' % fieldmosaic_day
-    if not os.path.exists(os.path.join(root_dir, fullfield_out_dir)):
+    if not os.path.exists(os.path.join(root_dir, fullfield_out_dir)) and not dry_run:
         os.makedirs(os.path.join(root_dir, fullfield_out_dir))
 
     """
