@@ -436,7 +436,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     cc_geo_daxf = create_daxf(cc_geo)
 
     # JOB
-    args = [canopy_cover_input_daxf, scan_name, full_resolution_geotiff_daxf]
+    args = [canopy_cover_input_daxf, scan_name, full_resolution_geotiff_daxf, date]
     inputs = [canopy_cover_input_daxf]
     outputs = [cc_bety_daxf, cc_geo_daxf]
     job = create_job('canopy_cover.sh', args, inputs, outputs, tools)

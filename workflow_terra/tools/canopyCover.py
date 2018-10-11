@@ -19,6 +19,7 @@ logger.setLevel(logging.INFO)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", required=True, help="Fullfield path")
+parser.add_argument("-d", "--date", required=True, help="Date being processed")
 parser.add_argument("-v", "--verbose", help="Debug logging", action="store_true")
 
 args = parser.parse_args()
@@ -58,8 +59,7 @@ def generate_traits_list(traits):
     return trait_list
 
 
-dirname = os.path.dirname(args.input)
-date = dirname[dirname.rfind("/")+1:len(dirname)]
+date = args.date
 time_fmt = date+"T12:00:00-07:00"
 
 bety_csv = args.input.replace(".tif", "_canopycover_bety.csv")

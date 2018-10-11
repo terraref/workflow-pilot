@@ -41,7 +41,7 @@ gdalbuildvrt -srcnodata "-99 -99 -99" -overwrite -input_file_list $IN_JSON $VRTF
 if [ $DRY_RUN == 'true' ]; then
     # For space considerations, only generate 2% mosaics during a dry run
     echo "Generating faux-100% GeoTIFF..."
-    gdal_translate -projwin -111.9750963 33.0764953 -111.9747967 33.074485715 -outsize 2% 2% $VRTFILE $GEOTIFF
+    gdal_translate -projwin -111.9750963 33.0764953 -111.9747967 33.074485715 -outsize 10% 10% $VRTFILE $GEOTIFF
 else
     echo "Generating 100% GeoTIFF..."
     gdal_translate -projwin -111.9750963 33.0764953 -111.9747967 33.074485715 $VRTFILE $GEOTIFF
