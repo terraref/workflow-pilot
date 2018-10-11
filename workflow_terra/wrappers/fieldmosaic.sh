@@ -67,5 +67,5 @@ fi
 # Zip up results of fullfield if inputs were zipped
 if [ -e "rgb_geotiff_${SCAN}.tar.gz" ]; then
     echo "Zipping fullfield_${SCAN}.tar.gz..."
-    tar czf fullfield_${SCAN}.tar.gz $OUT_DIR
+    tar czf fullfield_${SCAN}.tar.gz $VRTFILE $GEOTIFF $THUMB $PCT10 $PNG
 fi
