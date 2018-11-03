@@ -49,4 +49,50 @@ From: terraref/workflow-pilot
 
 `ssh htc-login.campuscluster.illinois.edu`
 
+## Running on PSC
+
+On `terra-condor`, activate the virtual environment with the correct version of Tornado and start the `pyglidein_server`:
+```
+. ~/venv/bin/activate
+ pyglidein_server --debug --delay 20 --port 22001 --constraint "'WantPSCBridges == True'"
+```
+
+Make sure the webserver is running to serve the Singularity image
+```
+ps -ef | grep SimpleHttpServer
+# if not running
+sudo su - 
+cd /images
+nohup python -m SimpleHTTPServer 80 & 
+```
+
+Run the workflow:
+```
+cd workflow-pilot/workflow_terra
+./submit.sh
+```
+
+On PSC, start the `glidein`, which is simply a Slurm job that allocates some resources to be condor nodes:
+```
+cd terraref-glidein
+. pyglidein/bin/activate
+pyglidein_client --config=bridges-RM.conf --secrets=secrets.conf
+```
+
+Debugging tips:
+* Use `pegasus-status` to look at the status of the workflow -- i.e., which job is currently running
+```
+$ pegasus-status -l /home/centos/workflows/stereo_rgb-1541238701/stereo_rgb-1541238701
+STAT  IN_STATE  JOB
+Run      02:42  stereo_rgb_stereovis_ir_sensors_partialplots_sorghum6_sun_flir_eastedge_mn_2_9ec3c25e-a155-410d-8cb6-5a26f12a5436-0 ( /home/centos/workflows/stereo_rgb-1541238701/stereo_rgb-1541238701 )
+Run      00:45   ┣━bin2tif_sh_ID0000001
+Run      00:44   ┣━bin2tif_sh_ID0000003
+Run      00:44   ┣━bin2tif_sh_ID0000005
+Run      00:43   ┗━bin2tif_sh_ID0000007
+```
+* `tail workflow/00/00/*` for quick debugging
+* `condor-status` will show you whether the glidein is running
+* If a condor task is `held`, use `condor_q -l | grep HoldReason` to get the details
+* `squeue -u $USER` on PSC will show you whats running in Slurm
+
 
