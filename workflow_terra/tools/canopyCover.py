@@ -63,7 +63,7 @@ date = args.date
 time_fmt = date+"T12:00:00-07:00"
 
 bety_csv = args.input.replace(".tif", "_canopycover_bety.csv")
-geo_csv = args.input.replace(".tif", "-_canopycover_geo.csv")
+geo_csv = args.input.replace(".tif", "_canopycover_geo.csv")
 csv_file = open(bety_csv, 'w')
 (fields, traits) = get_traits_table()
 csv_file.write(','.join(map(str, fields)) + '\n')
