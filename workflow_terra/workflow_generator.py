@@ -12,7 +12,8 @@ from terrautils.betydb import dump_experiments
 dry_run = True
 limit_dates = ["2018-07-03"]
 scan_size_limit = 3
-execution_env = 'condor_pool'
+#execution_env = 'condor_pool'
+execution_env = 'psc_bridges'
 
 sites_dir = "/data/terraref/sites/"
 # Outputs will appear here
@@ -74,8 +75,6 @@ def my_lfn(orig_lfn):
     '''
 
     lfn = orig_lfn
-    if execution_env == 'condor_pool':
-        lfn = re.sub(r'/', '___', orig_lfn)
 
     lfn = re.sub(r'^___', '', lfn)
     return lfn
@@ -85,10 +84,15 @@ def my_pfn(orig_path):
     Depending on the execution environment, use either file:// or go:// PFNs
     '''
 
-    if execution_env != 'condor_pool' and re.search(r'sites/ua-mac/raw_data/stereoTop', orig_path):
+    if execution_env == 'psc_bridges':
+        return PFN('scp://centos@141.142.209.167/' + orig_path, site='local')
+    elif execution_env != 'condor_pool' and re.search(r'sites/ua-mac/', orig_path):
         path = re.sub(r'.*ua-mac/', 'go://terraref#403204c4-6004-11e6-8316-22000b97daec/ua-mac/', orig_path)
         return PFN(path, site='globusonline')
-    return PFN('file://' + orig_path, site='local')
+    elif execution_env != 'condor_pool':
+        path = 'go://terraref#403204c4-6004-11e6-8316-22000b97daec/%s' % orig_path
+        return PFN(path, site='globusonline')
+    return PFN('scp://centos@141.142.209.167/' + orig_path, site='local')
 
 def create_daxf(lfn, pfn=False, dax=None):
     """Return File entry for dax catalog based on file path.
@@ -119,7 +123,7 @@ def generate_tools_list():
 
     # Set BETYDB_LOCAL_CACHE_FOLDER = /tools directory
     print("Dumping BETY experiments file into "+os.environ.get('BETYDB_LOCAL_CACHE_FOLDER', "/home/extractor/"))
-    dump_experiments()
+    #dump_experiments()
 
     toollist = [
         "bin2tif.py",
@@ -134,7 +138,8 @@ def generate_tools_list():
 
     print("Including /tools directory files")
     for t in toollist:
-        tool_daxf = create_daxf(t, os.path.join(os.getcwd()+"/tools", t))
+        #tool_daxf = create_daxf(t, os.path.join("tests/workflow/workflow-pilot/workflow_terra/tools", t))
+        tool_daxf = create_daxf(t, os.path.join(os.getcwd(), "tools", t))
         # Use filename as dict key in case we need it as input later
         out[t] = tool_daxf
 
@@ -338,7 +343,8 @@ def create_scan_dax(date, scan_name, scan_list, tools):
         ----- Clowder submission (upload bin2tif files to Clowder) -----
         """
         clowder_ids = 'rgb_'+ts+'clowder_ids.json'
-        out_cid_daxf = create_daxf(clowder_ids, os.path.join(rgb_geotiff_out_dir, clowder_ids), dax)
+        #out_cid_daxf = create_daxf(clowder_ids, os.path.join(rgb_geotiff_out_dir, clowder_ids), dax)
+        out_cid_daxf = create_daxf(clowder_ids)
         args = ['rgb_geotiff', scan_name, rgb_geotiff_out_dir]
         inputs = [out_left_daxf, out_right_daxf, out_meta_daxf, out_qual_left_daxf, out_qual_right_daxf, out_nrmac_daxf]
         outputs = [out_cid_daxf]
@@ -360,10 +366,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     field_paths_qual_daxf = create_daxf(field_paths_qual, os.path.join(root_dir, fullfield_out_dir, field_paths_qual), dax)
     with open(os.path.join(root_dir, fullfield_out_dir, field_paths_qual), 'w') as j:
         for path in fieldmosaic_quality_inputs:
-            if execution_env == 'condor_pool':
-                j.write("%s\n" % path)
-            else:
-                j.write("%s\n" % re.sub(r'/', '___', path))
+            j.write("%s\n" % path)
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic
@@ -393,10 +396,7 @@ def create_scan_dax(date, scan_name, scan_list, tools):
     field_paths_norm_daxf = create_daxf(field_paths_norm, os.path.join(root_dir, fullfield_out_dir, field_paths_norm), dax)
     with open(os.path.join(root_dir, fullfield_out_dir, field_paths_norm), 'w') as j:
         for path in fieldmosaic_inputs:
-            if execution_env == 'condor_pool':
-                j.write("%s\n" % path)
-            else:
-                j.write("%s\n" % re.sub(r'/', '___', path))
+            j.write("%s\n" % path)
 
     # OUTPUT
     # when running in condorio mode, lfns are flat, so create a tarball with the deep lfns for the fieldmosaic

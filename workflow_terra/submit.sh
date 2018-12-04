@@ -7,16 +7,24 @@ set -e
 #cd $TOP_DIR
 
 # exec env
-EXEC_ENV="condor_pool"
+EXEC_ENV="psc_bridges"
 case $EXEC_ENV in
     "condor_pool")
         EXEC_SITE="condor_pool"
         STAGING_SITE="local"
         OUTPUT_SITE="local"
         ;;
+     # Pre Globus
+#    "psc_bridges")
+#        EXEC_SITE="psc_bridges"
+#        STAGING_SITE="local"
+#        OUTPUT_SITE="local"
+#        ;;
+    # Globus
     "psc_bridges")
-        EXEC_SITE="condor_pool"
-        STAGING_SITE="local"
+        EXEC_SITE="psc_bridges"
+        STAGING_SITE="psc_bridges"
+        #OUTPUT_SITE="terraref_go"
         OUTPUT_SITE="local"
         ;;
     "isi_shared")
@@ -64,4 +72,6 @@ pegasus-plan \
     --relative-dir $RUN_ID \
     --dir $RUN_DIR \
     --dax workflow/generated/singletest.xml \
-    --submit
+ 
+   
+#--submit
