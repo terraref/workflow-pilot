@@ -1,2 +1,4 @@
 workflow/generated/
 workflow/run-settings.conf
+workflow_terra/data/
+.idea/*
