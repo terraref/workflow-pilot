@@ -2,12 +2,14 @@
 
 set -e
 
-#TOP_DIR=`dirname $0`
-#TOP_DIR=`cd $TOP_DIR/.. && pwd`
-#cd $TOP_DIR
+EXEC_ENV=$1
+if [ "x$EXEC_ENV" = "x" ]; then
+    echo "Please specify an execution environment [psc_bridges, condor_pool]"
+    echo "Example: ./submit.sh condor_pool"
+    exit 1
+fi
 
 # exec env
-EXEC_ENV="psc_bridges"
 case $EXEC_ENV in
     "condor_pool")
         EXEC_SITE="condor_pool"
@@ -26,11 +28,6 @@ case $EXEC_ENV in
         STAGING_SITE="psc_bridges"
         #OUTPUT_SITE="terraref_go"
         OUTPUT_SITE="local"
-        ;;
-    "isi_shared")
-        EXEC_SITE="isi_shared"
-        STAGING_SITE="isi_shared"
-        OUTPUT_SITE="isi_shared"
         ;;
     *)
         echo "Unknown execution environment."

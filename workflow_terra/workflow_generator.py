@@ -40,7 +40,7 @@ def add_merge_job(dax, final_name, chunk, level, job_number, final):
     j.uses(out_file, link=Link.OUTPUT, transfer=final)
     j.addArguments(out_file)
     for f in chunk:
-        flfn = File(my_lfn(f))
+        flfn = File(f)
         j.uses(flfn, link=Link.INPUT)
         j.addArguments(flfn)
     j.addProfile(Profile(Namespace.CONDOR, 'request_disk', '100 GB'))
@@ -68,17 +68,6 @@ def merge_rgb_geotiffs(dax, final_name, inputs, level):
 
     return merge_rgb_geotiffs(dax, final_name, new_outputs, level + 1)
 
-def my_lfn(orig_lfn):
-    '''
-    Depending on the execution environment, we might have to "flatten" the
-    lfn so that it does not have any sub directories.
-    '''
-
-    lfn = orig_lfn
-
-    lfn = re.sub(r'^___', '', lfn)
-    return lfn
-
 def my_pfn(orig_path):
     '''
     Depending on the execution environment, use either file:// or go:// PFNs
@@ -101,7 +90,7 @@ def create_daxf(lfn, pfn=False, dax=None):
         dax = if provided, file will be added to dax, e.g. for inputs.
     """
 
-    daxf = File(my_lfn(lfn))
+    daxf = File(lfn)
     if pfn:
         daxf.addPFN(my_pfn(pfn))
     if dax:

@@ -3,7 +3,7 @@
 set -e
 set -x
 
-IN_JSON=`echo "$1" | sed 's;___;/;g'`
+IN_JSON=$1
 SCAN=$2
 SINGLE=$3
 DRY_RUN=$4

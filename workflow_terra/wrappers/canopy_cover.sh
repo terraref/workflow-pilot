@@ -2,7 +2,7 @@
 
 set -e
 
-INPUT=`echo "$1" | sed 's;___;/;g'`
+INPUT=$1
 SCAN=$2
 IMAGE=$3
 DATE=$4

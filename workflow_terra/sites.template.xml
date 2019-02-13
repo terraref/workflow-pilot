@@ -22,22 +22,6 @@
         <profile namespace="condor" key="request_memory" >1 GB</profile>
         <profile namespace="condor" key="request_disk" >2 GB</profile>
     </site>
-    
-    <site  handle="isi_shared" arch="x86_64" os="LINUX">
-        <directory type="shared-scratch" path="/lizard/scratch-90-days/$USER">
-            <file-server operation="all" url="go://rynge#workflow-isi/lizard/scratch-90-days/$USER"/>
-        </directory>
-        <directory type="shared-storage" path="/lizard/scratch-90-days/$USER/storage">
-            <file-server operation="all" url="go://rynge#workflow-isi/lizard/scratch-90-days/$USER/storage"/>
-        </directory>
-        <profile namespace="pegasus" key="data.configuration" >sharedfs</profile>
-        <profile namespace="pegasus" key="auxillary.local" >True</profile>
-        <profile namespace="pegasus" key="style" >condor</profile>
-        <profile namespace="condor" key="universe" >vanilla</profile>
-        <profile namespace="condor" key="request_memory" >1 GB</profile>
-        <profile namespace="condor" key="request_disk" >2 GB</profile>
-        <profile namespace="env" key="PEGASUS_HOME" >/lizard/scratch-90-days/bamboo/installs/pegasus-4.9.0dev</profile>
-    </site>
 
     <!--  Pre-GLobus
      <site  handle="psc_bridges" arch="x86_64" os="LINUX">
